@@ -1,0 +1,13 @@
+#!/bin/bash
+#
+# /etc/rc.local: Local multi-user startup script.
+#
+
+/usr/bin/setserial /dev/ttyS0 uart none
+modprobe lirc_serial
+
+/usr/sbin/lircd --device=/dev/lirc0 --output=/dev/lircd
+
+/usr/bin/ivtvctl -d /dev/video0 -p2 -fwidth=352,height=240
+
+

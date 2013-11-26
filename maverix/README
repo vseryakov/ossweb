@@ -1,0 +1,156 @@
+Maverix: SMTP proxy for Naviserver 4.x
+Release 2.5
+vlad@crystalballinc.com
+
+    Maverix, Anti-Spam and Anti-Virus solution for Naviserver
+
+This is Naviserver module that implements SMTP protocol 
+and acts as SMTP proxy with anti-spam and anti-virus capabilities. 
+It includes Web interface to manage quarantined messages and administrative 
+interface based on OSSWEB <http://www.crystalballinc.com/vlad/software/ossweb>.
+
+*Compiling and Installing*
+
+To support anti-SPAM feature one of the following should be installed:
+
+    * SpamAssasin <http://www.spamassassin.org/>
+    * DSPAM <http://www.nuclearelephant.com/projects/dspam/> patched
+      version <http://www.crystalballinc.com/vlad/dspam-3.1.0-vlad-src.tar.gz>. 
+
+To support anti-virus feature one of the following should be installed:
+
+    * ClamAV <http://www.clamav.net/>
+    * Sophos: SAVI <http://sophos.com> 
+
+PostgreSQL <http://www.postgresql.org/> server should be installed and
+running before installing OSSWEB and Maverix.
+
+Naviserver installation is simple, download latest Naviserver sources from
+http://sourceforge.net/projects/naviserver or better yet get the latest sources
+from CVS:
+
+   cvs -d:pserver:anonymous@naviserver.cvs.sourceforge.net:/cvsroot/naviserver login
+   cvs -z3 -d:pserver:anonymous@naviserver.cvs.sourceforge.net:/cvsroot/naviserver co -P naviserver
+   cvs -z3 -d:pserver:anonymous@naviserver.cvs.sourceforge.net:/cvsroot/naviserver co -P modules
+
+   cd naviserver
+   ./configure
+   make install
+
+   cd ../modules
+   make install
+
+Download and install OSSWEB. If PostgreSQL is running under different user than
+you, then edit Makefile.config and change dbuser variable:
+
+wget ftp://ftp.crystalballinc.com/pub/vlad/ossweb.tar.gz
+tar -xzf ossweb.tar.gz
+cd ossweb
+make create_db
+make instal_db
+make install
+
+If database user is not you then add DBUSER=user to every make command:
+make create_db DBUSER=user
+make init DBUSER=user
+
+By default OSSWEB Naviserver listens on 127.0.0.1:8080. To change edit
+/usr/local/ns/etc/nsd.tcl section ns/server/${server}/module/nssock,
+parameters address, hostname and port. If valid resolvable hostname is given, 
+then address parameter can be omitted completely.
+
+Download and install Maverix. Edit Makefile to reflect correct flags and
+paths to the installed software:
+
+wget ftp://ftp.crystalballinc.com/pub/vlad/nsmaverix.tar.gz
+tar -xzf nsmaverix.tar.gz
+cd nsmaverix
+make
+make install
+
+*Configuring*
+
+Add the following configuration directives to the nsd.tcl file, modules
+section should already exist, so just add nsmaverix line there:
+
+ns_section      "ns/server/${server}/modules"
+ns_param        nssmtpd            ${home}/bin/nssmtpd.so
+
+ns_section      "ns/server/${server}/module/nssmtpd"
+ns_param        port                    2525
+ns_param        address                 127.0.0.1
+ns_param        relay                   localhost:25
+ns_param        spamd                   localhost
+ns_param        initproc                maverix::init
+ns_param        rcptproc                maverix::handler::RCPT
+ns_param        dataproc                maverix::handler::DATA
+ns_param        errorproc               maverix::handler::ERROR
+
+Once enabled, maverix acts as SMTP server forwarding all messaged to
+configured real smtp server via relay parameter. for each SMTP command
+it calles configured Tcl handler which performs actual processing.
+
+The following changes should be applied to standard /etc/mail/sendmail.cf:
+
+SParse1
+Rmaverix <@ $=w . >             $#smtp $@ [127.0.0.1:2525] $: maverix < @ $1 >
+Rmaverix-sender <@ $=w . >      $#smtp $@ [127.0.0.1:2525] $: maverix-sender < @ $1 >
+
+If you running postfix instead of sendmail then replace smtp port with
+port 2525 in /etc/postfix/master.cf for smtpd daemon and add the
+following lines into /etc/postfix/transport.map:
+
+maverix@`uname -n` smtp:[127.0.0.1:2525]
+maverix-sender@`uname -n` smtp:[127.0.0.1:2525]
+
+and type command postmap /etc/postfix/transport.map
+
+*Usage*
+
+There is ns_snmp command availabe to create SNMP sessions and make
+requests.
+
+ns_smtpd usage:
+
+  ns_smtpd flag
+  ns_smtpd send
+  ns_smtpd relay
+  ns_smtpd local
+  ns_smtpd encode
+  ns_smtpd decode
+  ns_smtpd checkemail - parses email and returns as name@domain if valid
+  ns_smtpd checkdomain
+  ns_smtpd virusversion - returns version of anti-virus tool used
+  ns_smtpd spamversion - returns version of anti-spam tool used
+  ns_smtpd checkspam
+  ns_smtpd trainspam
+  ns_smtpd checkvirus
+  ns_smtpd sessions
+  ns_smtpd gethdr
+  ns_smtpd gethdrs
+  ns_smtpd getbody
+  ns_smtpd getfrom
+  ns_smtpd getfromdata
+  ns_smtpd setfrom
+  ns_smtpd setfromdata
+  ns_smtpd getrcpt
+  ns_smtpd getrcptdata
+  ns_smtpd addrcpt
+  ns_smtpd setrcptdata
+  ns_smtpd delrcpt
+  ns_smtpd setflag
+  ns_smtpd unsetflag
+  ns_smtpd getflag
+  ns_smtpd setreply
+  ns_smtpd getline
+  ns_smtpd dump
+
+*Licensing*
+
+Maverix is covered by Mozilla license.
+
+*Authors*
+
+Vlad Seryakov vlad@crystalballinc.com
+Eric Dean eric@crystalballinc.com
+

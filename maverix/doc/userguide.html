@@ -1,0 +1,458 @@
+<html><head>
+<title>Maverix User Guide</title>
+<style>
+TD P { color: #000000 }
+H1 { color: #000000 }
+P { color: #000000 }
+H2 { color: #000000 }
+A:link { color: #0000ff }
+A:visited { color: #800080 }
+</style>
+</head>
+<body link="#0000ff" text="#000000" vlink="#800080">
+
+<h1 align="center"><a name="_Toc39487179"></a><font size="5">Maverix User Guide</font></h1>
+<p>
+<OL>
+<LI><A href="#_Toc39487179">Maverix User Guide</A>
+<LI><a href="#_Toc39487180">Overview</A>
+<LI><a href="#_Toc39487181">User Verification Process</A>
+<LI><a href="#_Toc39487182">Sender Verification Process</A>
+<LI><a href="#_Toc39487183">User Preference Parameters</A>
+<LI><a href="#_Toc39487184">Spam Blocked</A>
+<LI><a href="#_Toc39487185">Messages</A>
+<LI><a href="#_Toc39487186">Properties</A>
+<LI><a href="#_Toc39487187">Whitelist</A>
+<LI><a href="#_Toc39487188">Blacklist</A>
+<LI><a href="#_Toc39487189">Greylist</A>
+</OL>
+
+<h1><a name="_Toc39487180"></a>Overview</h1>
+<p>
+Mail Verification Exchange, Maverix, is an enterprise class
+appliance that provides a secure anti-spam/anti-virus solution.&nbsp;
+The solution eliminates spam by interrogating each email that
+arrives.&nbsp; Emails from known spammers or spam domains are
+immediately deleted.&nbsp; Emails from known senders or domains are
+immediately delivered to the user&#8217;s inbox. However, emails from
+unknown senders are challenged to one-time-verify as a valid Internet
+sender intending to send valid email.&nbsp; This is accomplished
+using our patent pending technology called Email Handshake
+Verification.&nbsp; All emails from unknown senders are held in a
+<i>quarantine database</i> until either the sender is verified by the
+user, self-verified by the sender, or ultimately is deleted after 1,2
+or 3 weeks (based on the user&#8217;s preferences).
+
+<p>
+See diagram 1 below.&nbsp; The sender self-verification option
+sends a welcome message to the sender of an incoming email requesting
+that the sender click on a web link to become a valid sender within
+the user&#8217;s <i>whitelist</i>.&nbsp; However, if the
+self-verification message bounces due to an &#8220;invalid user&#8221;
+error, as they often do for spammers that spoof their origin using
+invalid address, the sender is automatically be blocked.&nbsp; All of
+these functions combine to greatly reduce the need for users to
+micro-manage their anti-spam service or worry about lost email.</p>
+
+<p>
+With Maverix, you can:
+<UL>
+<LI>Stop spam before it reaches your desktop
+    therefore reducing you Deleted folders and speeding up your email
+    client performance
+<LI>Prevent web-based HTML spam messages from
+    generating pop-ups, displaying offensive material, or try to download
+    destructive software
+<LI>Eliminate viruses before they reach your computer
+<LI>Prevent spam with embedded tracking ids that notify a spammer of the validity of your email address
+<LI>Guarantee immediate delivery of all your valid email from desired senders
+<LI>Allow senders to verify themselves so that their email is immediately delivered
+<LI>Directly manage your personal settings
+    including vacation, working hours, digest frequency, and other options
+<LI>Maintain subscriptions to both external and internal mailing lists
+<LI>Send mail within the company as well as to major everyday clients without anti-spam checking
+</UL>
+
+<h1><a name="_Toc39487181"></a>User Verification Process</h1>
+<p>
+All incoming email is interrogated to determine if the sender or
+the sender domain is already on the user&#8217;s whitelist per
+Diagram 1.&nbsp; If the sender is whitelisted, then the email is
+immediately delivered to the user&#8217;s mail system.&nbsp; If the
+system is blacklisted, then the email is dropped.&nbsp; If the sender
+is not whitelisted or blacklisted, then the message is automatically
+greylisted and quarantined while Maverix&#8217;s verification process
+follows.
+<P>
+<CENTER>
+<img src="userguide.gif" border="0" height="631" width="575"><BR>
+Diagram 1
+</CENTER>
+
+<p>
+If the user has sender self-verification enabled, then the sender
+will receive a verification handshake message from the Maverix
+system.&nbsp; If the sender clicks on the &#8220;Verify&#8221; like
+within the message, then the sender will be added to the user&#8217;s
+whitelist.&nbsp; Otherwise, the user will periodically receive a
+digest message that lists all email within the quarantine database.&nbsp;
+The user will then select which senders to add to his personal
+whitelist, to his blacklist, or the user can simply forward or drop
+that specific message.
+
+<p>
+The Maverix system uses an internal email address such as
+<a href="mailto:maverix@maverix.domain.com">maverix@maverix.domain.com</a>
+when sending.&nbsp; Using this sender name helps prevent verification
+message loops between two verification systems as well as clearly
+identifies the system to the recipient. 
+
+<p>
+Maverix also uses a standard subject header when sending to a user
+or sender:<P>
+<B>&nbsp; Maverix Anti-Spam: 1 Message(s) pending verification</B>
+<p>
+The body of the Maverix quarantine digest message contains clear
+instructions on how to manage the pending messages.<P>
+Below is an example of a user quarantine digest message:
+<hr size="2">
+<P>
+The following messages are awaiting your decision whether to permit or deny their delivery.
+<P>
+
+<form action="" method="post">
+
+<TABLE WIDTH=100% BORDER=0 BGCOLOR=black CELLSPACING=1 CELLPADDING=2>
+<TR BGCOLOR=#CCCCCC>
+   <TD WIDTH=1% >&nbsp;</TD>
+   <TD><TABLE WIDTH=100% BORDER=0 CELLSPACING=0 CELPADDING=0>
+       <TR><TH>Sender</TH>
+           <TD ALIGN=RIGHT>
+              <INPUT TYPE=SUBMIT NAME=c VALUE="Permit Checked"> &nbsp;
+              <INPUT TYPE=SUBMIT NAME=c VALUE="Block Checked">
+           </TD>
+       </TR>
+       </TABLE>
+   </TD>
+   <TD><TABLE WIDTH=100% BORDER=0 CELLSPACING=0 CELPADDING=0>
+       <TR><TH>Subject</TH>
+           <TD ALIGN=RIGHT>
+              <INPUT TYPE=SUBMIT NAME=c VALUE="Forward Checked"> &nbsp;
+              <INPUT TYPE=SUBMIT NAME=c VALUE="Drop Checked">
+           </TD>
+       </TR>
+      </TABLE>
+   </TD>
+   <TH>Date</TH>
+   <TD><TABLE BGCOLOR=#CCCCCC WIDTH=100% BORDER=0 CELLSPACING=0 CELPADDING=0>
+       <TR><TH>Text</TH>
+           <TD ALIGN=RIGHT>
+              <INPUT TYPE=SUBMIT NAME=c VALUE="View Pending Messages">
+           </TD>
+       </TR>
+      </TABLE>
+   </TD>
+   <TD WIDTH=1% >SPAM Score</TD>
+</TR>
+<TR VALIGN=TOP BGCOLOR=white>
+   <TD WIDTH=1% ><INPUT TYPE=checkbox NAME=i VALUE="frieda@roxette.org 81479"></TD>
+   <TD>frieda@roxette.org<BR></TD>
+   <TD>Check this</TD>
+   <TD>06/16/04 20:19:34</TD>
+   <TD>X-Message-Info: OK/tu+01+bd/<BR>O+33/70673040012<BR>Received: from smtp-chiefdom.<BR>anticipate.Frieda@roxette.org <BR>([24.76.10.157]) by i[1
+</TD>
+<TD>0.055</TD>
+</TR>
+</TABLE>
+</form>
+--<BR>
+<TABLE WIDTH=100% BORDER=0 CELLSPACING=0 CELLPADDING=0>
+<TR>
+<TD>
+Maverix Systems<BR>
+http://www.maverixsystems.com
+</TD>
+<TD ALIGN=RIGHT>
+<A HREF=javascript:; CLASS=aa >Preferences</A><BR>
+<A HREF=javascript:; CLASS=aa >Pending Messages</A><BR>
+<A HREF=javascript:; CLASS=aa >Maverix User Guide</A><BR>
+<A HREF=javascript:; CLASS=aa >Request your Digest at any time</A>
+</TD>
+</TR>
+</TABLE>
+</BODY>
+<p>
+<hr size="2">
+<p>
+The user quarantine digest displays a summary of the emails
+pending within the quarantine database.&nbsp; The user then has the
+options to take the following actions on each message:
+
+<p>
+<UL>
+<LI><b>Permit </b>- Allow this sender to always send email by adding
+    the sender to the user&#8217;s whitelist
+<LI><b><br>Block - </b>Deny all email from this sender by adding this sender to the user&#8217;s
+    blacklist
+<LI><b><br>Forward </b>- Forward only this message and the
+    sender remains on the greylist
+<LI><b><br>Drop </b>- Drop this particular
+    message and the sender remains on the greylist
+</UL>
+<p>
+When the user clicks on the first action, a new browser window
+will launch and the user will see a complete listing of all
+quarantined email awaiting the user&#8217;s actions.&nbsp; 
+
+<p>
+The user can either perform an action on each individual message
+or can check the boxes to the left and perform an aggregate
+operation:
+<UL>
+<LI><b>Permit Checked </b>&#8211; All senders with the box checked are
+added to the user&#8217;s whitelist
+<LI><b>Block Checked </b>- All senders with the box checked are added
+to the user&#8217;s blacklist<b><br>Forward Checked </b>- All
+messages with the box checked are delivered to the user and the
+sender remains on the greylist
+<LI><b>Drop Checked </b>- All messages with the box checked are
+delivered to the user and the sender remains on the greylist
+</UL>
+<p>
+Clicking on a link may sometimes produce the following error:
+<p>
+<font color="#ff0000">
+ Sorry, that verification request in invalid,
+ Please check for a more recent verification URL
+</font>
+
+<p>
+Maverix uses a complex algorithm to generate its secure one-time,
+short-lived URLs used for managing email delivery.&nbsp;
+Periodically, the Maverix system will send a digest to the user and
+will generate all new URLs used for the aforementioned actions.&nbsp;
+When a new digest is generated, the old URLs are expired and the new
+URLs are active.&nbsp; Because Maverix does not require for users to
+remember more and more passwords, all security is managed using
+short-lived URLs embedded within the email messages.&nbsp; The digest
+messages are delivered directly to the user who must use a secure
+email connection and password to receive the digest emails.&nbsp; In
+fact, Maverix is password protected, not via additional passwords,
+but rather using the existing one for regular email.&nbsp; 
+
+<p>
+Often, spammers send spam with unique sender addresses per spam,
+like <a href="mailto:perf-message.16051754.0.0.4@somwhere.com">perf-message.16051754.0.0.4@somwhere.com</a>.&nbsp;
+It is obvious that this spammer uses some sort of auto-generating
+sender id for tracking the performance of the spamming campaign.&nbsp;
+Since it will be unlikely to see this sender id again, dropping the
+particular message from the Maverix server will have the same effect
+as blocking the sender.
+
+<p>
+Dropping spam on the Maverix server instead of within the client
+software provides a variety of advantages.&nbsp; Many spammers use a
+brute force <i>dictionary attack</i> against a corporate mail gateway
+and embed tracking objects within HTML messages to determine whether
+an email address is valid or not.&nbsp; Since Maverix drops the email
+at the server, spammers are unable to track the success of their
+campaigns.&nbsp; Other benefits of dropping unwanted email on the
+server include prevention of viruses, pop-ups, security
+vulnerabilities within the email client, and less consumption of
+system resources
+
+<h1><a name="_Toc39487182"></a>Sender Verification Process</h1>
+
+<p>
+Sender verification is a highly valuable option that allows for
+new senders to immediately deliver their email to intended users.&nbsp;
+Upon sending an email to a Maverix user, the sender will immediately
+receive a challenge handshake message to ensure that the sender is in
+fact a real user on the Internet intending to send a message.&nbsp;
+Below is an example, of a typical Maverix challenge handshake
+message:
+<p>
+<hr size="2">
+<p>&nbsp;
+<p>
+You have recently sent an email message to address specified below. In order to have your message
+delivered, click on <b>Verify</b> link after each email address:
+<p>
+<ul>
+  <li>joeuser@somecompany.com <a href="javascript:;" target="Mvrx">Verify</a>
+</ul>
+<p>
+Once you have verified, your E-mail will be allowed to pass through and you
+will be put on list of verified addresses and you will not have to go
+through this process again.
+<p>
+<hr size="2">
+<p>&nbsp;
+<p>
+Often a spammer uses a spoofed email address and therefore the
+challenge message bounces due to an &#8220;invalid user&#8221;
+error.&nbsp; Maverix will automatically drop any challenge messages
+that bounce from an explicit invalid user error message.&nbsp; This
+does not mean that if a sender&#8217;s emails server is down, then
+email will get dropped.&nbsp; A message is only dropped if the bounce
+contains an <i>invalid user</i> error message which is distinctively
+different from other errors.&nbsp; Email should be sent with valid
+return sender email addresses.&nbsp; If there is an invalid email
+address that should directly deliver email to a user, then the user
+can enter that address within the user preferences interface.&nbsp;&nbsp;
+
+<h1><a name="_Toc39487183"></a>User Preference Parameters</h1>
+<P>
+In the top right hand corner of each user digest browser, opened after clicking on the
+first action, is a link to the user&#8217;s individual account
+settings.
+
+<h2><a name="_Toc39487184"></a>Spam Blocked</h2>
+<P>
+The <b>Spam Blocked</b> value is a counter that tracks all spam either auto-blocked via
+bounced challenges or blocked via the user blacklist or user drop.</font></p>
+<p>
+There should be five TABs listed in the top right corner:</p>
+<p>
+<UL>
+<LI><B>Messages</B> - Displays all actionable messages pending within the quarantine database.&nbsp;
+    User can then Permit, Block, Forward, Drop email messages.
+<LI><B>Properties</B> - User interface for customizing email parameters
+<LI><B>Whitelist</B> &#8211; <font face="Arial">Shows
+    all senders and domains allowed to directly send mail to users
+<LI><B>Blacklist</B> - Shows all senders and domains that are denied from sending email
+<LI><B>Greylist</B> - Shows all senders that are pending verification
+</UL>
+
+<h2><a name="_Toc39487185"></a>Messages</h2>
+<p style="margin-bottom: 0in;"><font face="Arial">The <b>Messages</b>
+TAB is displayed by default and should show all messages within the
+quarantine database pending verification.&nbsp; These messages are
+displayed in the standard digest format described in the User
+Verification section.</font></p>
+
+<h2><a name="_Toc39487186"></a>Properties</h2>
+<P>
+The <b>Properties</b> TAB maintains all the user specific configuration parameters.
+<P>
+<font size="3"><u>Maverix Account Type:</u></font>
+<P>
+<UL>
+<LI><B>Put unknown email on hold for verification</B> - All unknown sender
+    email will get stored within the quarantine database pending
+    verification.&nbsp; If sender self-verification is enabled, then they
+    will receive challenge messages
+<LI><B>I want all email pass through directly to my mailbox</B> - All email for the
+    user passes directly through the system unchecked.&nbsp; This is
+    typically the Default mode for installation.
+<LI><B>Digest with unverified messages/senders will be sent every</B> -
+    Periodic interval that the digest message will be
+    sent to the user.&nbsp; A good default value is every two hours.&nbsp;
+    Maverix will not blindly fill up the user&#8217;s mailbox with digest
+    messages but will instead intelligently handle digest management.
+<LI><B><font face="Arial">Digest will be sent within this period of day</B> - 
+    This is the &#8220;working day&#8221; start and stop time that the digest
+    messages will be delivered.&nbsp; This is so that Maverix doesn&#8217;t
+    continue to send digests after hours.&nbsp; The &#8220;From&#8221;
+    time is that start of the day at which digests begin and the &#8220;To&#8221;
+    is the time at which they stop.
+</UL>
+<P>
+<u>Sender Self-Verification: </u>
+<P>
+<UL>
+<LI><B>Yes, Allow unknown senders to perform self-verification</B> -
+    New senders will receive a challenge handshake message and bounces will get
+    auto-dropped.
+<LI><B>No, I will verify unknown senders by myself</B> - New senders will not receive
+    challenge handshake messages and instead all new senders must be
+    verified by the user.
+</UL>
+<P>
+After completing any change, select the <b>Update</b> button to save any changes.
+
+<h2><a name="_Toc39487187"></a>Whitelist</h2>
+<P>
+All senders permitted to deliver email directly to a user are listed within the
+Whitelist TAB.&nbsp; Verified sender email addresses are listed in
+alphabetical order.&nbsp; You can change the action by selecting the
+&#8220;Block&#8221;, &#8220;Pend&#8221;, or &#8220;Delete&#8221;
+buttons.
+<P>
+<UL>
+<LI>Block &#8211; Deny email from this sender or domain.&nbsp; 
+    Places sender or domain on blacklist
+<LI>Pend &#8211; Require sender to perform verification.&nbsp; 
+    Places sender or domain on greylist
+<LI>Delete &#8211; Delete sender or domain from whitelist.&nbsp; 
+    Removes sender or domain from list 
+</UL>
+<P>
+New senders or domains can be added to the list by simply typing them in the box
+&#8220;Add new Email/Domain&#8221;.&nbsp; Currently Maverix supports
+the following:
+<P>
+<UL>
+<LI>Adding a full sender name i.e. joe@somewhere.com
+<LI>Adding a full domain name i.e. mail.host.domain.name.com
+<LI>Adding the top two levels of a domain name: i.e. spammer.com, bogusmail.com
+</UL>
+
+<h2><a name="_Toc39487188"></a>Blacklist</h2>
+<P>
+All senders explicitly blocked from sending email to a user are listed within the
+Blacklist TAB.&nbsp; Blocked sender email addresses are listed in
+alphabetical order.&nbsp; You can change the action by selecting the
+&#8220;Permit&#8221;, &#8220;Pend&#8221;, or &#8220;Delete&#8221;
+buttons.
+<P>
+<UL>
+<LI>Permit &#8211; Permit email from this sender or domain.&nbsp; 
+    Places sender or domain on whitelist.
+<LI>Pend &#8211; Require sender or domain to perform verification.&nbsp; 
+    Places sender or domain on greylist
+<LI>Delete &#8211; Delete sender or domain from blacklist.&nbsp; 
+    Removes sender or domain from list.&nbsp;
+</UL>
+<P>
+
+<a name="_Toc39487189"></a>
+New senders or domains can be added to the list by simply typing them in
+the box &#8220;Add new Email/Domain&#8221;.&nbsp; Currently Maverix
+supports the following:
+<P>
+<UL>
+<LI>Adding a full sender name i.e. joe@somewhere.com
+<LI>Adding a full domain name i.e. mail.host.domain.name.com
+<LI>Adding the top two levels of a domain name: i.e. spammer.com, bogusmail.com
+</UL>
+
+<h2>Greylist</h2>
+
+<P>All senders requiring verification when sending email to a user are listed within
+the Greylist TAB.&nbsp; Unverified sender email addresses are listed
+in alphabetical order.&nbsp; When a message is either forwarded or
+dropped, the sender remains in an unverified state and resides on the
+greylist until either moved to the blacklist or whitelist.&nbsp; You
+can change the action by selecting the &#8220;Permit&#8221;, &#8220;Block&#8221;,
+or &#8220;Delete&#8221; buttons.
+<P>
+<UL>
+<LI>Permit &#8211; Permit email from this sender or domain.&nbsp; 
+    Places sender or domain on whitelist.
+<LI>Block &#8211; Deny email from this sender or domain.&nbsp; 
+    Places sender or domain on blacklist.
+<LI>Delete &#8211; Delete sender or domain from greylist.&nbsp; 
+    Removes sender or domain from list.
+</UL>
+<P>
+New senders or domains can be added to the list by simply typing them in the box
+&#8220;Add new Email/Domain&#8221;.&nbsp; Currently Maverix supports
+the following:<P>
+<UL>
+<LI>Adding a full sender name i.e. joe@somewhere.com
+<LI>Adding a full domain name i.e. mail.host.domain.name.com
+<LI>Adding the top two levels of a domain name: i.e. spammer.com, bogusmail.com
+</UL>
+</body>
+</html>

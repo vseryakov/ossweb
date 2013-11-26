@@ -1,0 +1,38 @@
+#!/bin/bash
+echo Content-type: text/html
+echo
+
+# To make firefox display in realtime we fill up the buffer
+
+echo "Pinging $QUERY_STRING"
+echo "                                                                             "
+echo "                                                                             "
+echo "                                                                             "
+echo "                                                                             "
+echo "                                                                             "
+echo "                                                                             "
+echo "                                                                             "
+echo "                                                                             "
+echo "                                                                             "
+echo "                                                                             "
+echo "                                                                             "
+echo "                                                                             "
+echo "                                                                             "
+echo "                                                                             "
+echo "                                                                             "
+echo "                                                                             "
+echo "                                                                             "
+echo "                                                                             "
+echo "                                                                             "
+echo "                                                                             "
+echo "                                                                             "
+echo "                                                                             "
+echo "                                                                             "
+echo "                                                                             "
+echo "                                                                             "
+
+echo "<PRE>"
+/bin/ping -w 10 -c 10 $QUERY_STRING
+echo "<PRE>"
+exit 0
+

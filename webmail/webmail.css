@@ -1,0 +1,169 @@
+
+.webmailLink {
+   text-decoration: none;
+   color: black;
+   cursor: pointer;
+}
+
+.webmailLine {
+   background-color: #E3E5EF;
+}
+
+#webmailStatus {
+   color: #c8a0a0;
+   font-size: 8pt;
+   font-weight: bold;
+   background-color: #EBEBEB;
+}
+
+#webmailToolbar {
+   background-color: #fbfbfb;
+}
+
+#webmailToolbar td {
+   white-space: nowrap;
+}
+
+#webmailToolbar input {
+   -moz-border-radius: 12px;
+   border: 2px solid #ccc;
+}
+
+#webmailToolbar input.search {
+   padding-left: 5px;
+   padding-right: 5px;
+   font-size: 10pt;
+   font-weight: bold;
+}
+
+#webmailToolbar table.osswebPopupTable {
+   -moz-border-radius: 10px;
+   border: 2px solid #ccc;
+   border-spacing: 0px;
+   background-color: #fff;
+   margin-left: 3px;
+   margin-right: 3px;
+}
+
+#webmailToolbar a.osswebPopupLink {
+   color: #000;
+}
+
+#webmailMain td {
+   border: 2px solid #ddd;
+}
+
+#webmailFolders {
+   width: 5%;
+   padding: 3px;
+   white-space: nowrap;
+}
+
+#webmailTree {
+   white-space: nowrap;
+}
+
+#webmailTree a {
+   color: #000;
+   font-size: 8pt;
+   font-weight: bold;
+}
+
+#webmailTree a:hover {
+   color: #000;
+   font-size: 8pt;
+   font-weight: bold;
+   background-color: #ddd;
+}
+
+#webmailTop tr {
+   height: 16px;
+}
+
+#webmailTop td {
+   border: 0px;
+   padding: 0px;
+   font-size: 8pt;
+   font-family: Verdana, Arial;
+}
+
+#webmailTop th {
+   border-bottom: 1px solid #ddd;
+}
+
+#webmailBottom {
+   border: 0px;
+   background-color: #ddd;
+   margin: 2px;
+}
+
+#webmailMessages {
+   height: 200px;
+   overflow-y: auto;
+   overflow-x: hidden;
+   empty-cells: show;
+}
+
+#webmailMessages td {
+   border-bottom: 1px solid #eee;
+   font-size: 8pt;
+   font-family: Verdana, Arial;
+   padding: 0px 0px 0px 3px;
+   height: 16px;
+}
+
+#webmailMessages tr.unread {
+   font-weight: bold;
+}
+
+#webmailMessages tr.selected {
+   background-color: #E3E5EF;
+}
+
+#webmailHeaders {
+   width: 100%;
+   font-size: 8pt;
+   display: block;
+   background-color: #f3f3f3;
+}
+
+#webmailHeaders td {
+   border: 0px;
+   padding-left: 16px;
+   white-space: nowrap;
+}
+
+#webmailHeaders tr.visible {
+   display: block;
+}
+
+#webmailHeaders tr.hidden {
+   display: none;
+}
+
+#webmailFlags {
+   font-size: 8pt;
+   font-weight: bold;
+   white-space: nowrap;
+   display: inline;
+}
+
+#webmailNewMsgs {
+   display: inline;
+}
+
+#webmailTotalMsgs {
+   display: inline;
+}
+
+#webmailMailbox {
+   display: inline;
+}
+
+#webmailBody {
+   display: block;
+   padding: 2px;
+   max-height: 500px;
+   overflow-y: auto;
+   overflow-x: hidden;
+}

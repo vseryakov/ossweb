@@ -1,0 +1,1726 @@
+<STYLE>
+.ex {
+  background-color: #EEEEEE;
+  margin: 5;
+}
+.pt {
+  color: brown;
+  font-weight: bold;
+  font-style: italic;
+}
+</STYLE>
+
+<HEAD>
+<TITLE>OSSMON Manual</TITLE>
+</HEAD>
+
+<BODY>
+Vlad Seryakov<BR>
+vlad@crystalballinc.com<P>
+
+<H2><A HREF=http://www.crystalballinc.com/vlad/software/ossmon/>OSSMON</A>:
+    high performance and extensible monitoring system
+</H2>
+
+<H3>Contents</H3>
+<OL>
+<LI><A HREF=#t1>What is OSSMON?</A>
+    <DL>
+    <DT>1.1. <A HREF=#t11>Introduction</A>
+    <DT>1.2. <A HREF=#t12>Architecture</A>
+    <DT>1.3. <A HREF=#t13>How OSSMON does it?</A>
+    <DT>1.4. <A HREF=#t14>Devices, Monitors</A>
+    <DT>1.5. <A HREF=#t15>Rules</A>
+    <DT>1.6. <A HREF=#t16>Agents</A>
+    <DT>1.7. <A HREF=#t17>Requirements</A>
+    </DL>
+<LI><A HREF=#t2>Installation</A>
+    <DL>
+    <DT>2.1. <A HREF=#t21>PostgreSQL</A>
+    <DT>2.2. <A HREF=#t22>OSSWEB/OSSMON</A>
+    <DT>2.3. <A HREF=#t23>OSSMON Agent</A>
+    </DL>
+<LI><A HREF=#t4>Running OSSMOM</A>
+    <DL>
+    <DT>4.1. <A HREF=#t41>Web interface</A>
+    <DT>4.2. <A HREF=#t42>Main screens</A>
+    <DT>4.3. <A HREF=#t43>Adding a device</A>
+    <DT>4.4. <A HREF=#t44>Configuraing monitors</A>
+    <DT>4.5. <A HREF=#t45>Real time console</A>
+    <DT>4.6. <A HREF=#t46>Templates</A>
+    <DT>4.7. <A HREF=#t47>Alerts</A>
+    <DT>4.8. <A HREF=#t48>Alert Rules</A>
+    <DT>4.9. <A HREF=#t49>Action Rules</A>
+    </DL>
+<LI><A HREF=#t5>Configuring OSSMON</A>
+    <DL>
+    <DT>5.1. <A HREF=#t51>Config parameters</A>
+    <DT>5.2. <A HREF=#t52>Agent configuration</A>
+    <DT>5.3. <A HREF=#t53>Naviserver configuration</A>
+    <DT>5.4. <A HREF=#t54>Adding new MIB files</A>
+    </DL>
+</OL>
+
+<OL>
+
+<LI><A NAME=t1><H3>What is OSSMON</H3></A>
+
+<DL>
+<DT><A NAME=t11><H4>1.1. Introduction</H4></A>
+
+OSSMON is application and network monitoring system. That means it is able to
+watch or monitor applications running on Unix or Windows servers, see if processor
+load is not too high, network interface is up and running and is not overloaded or
+other thousand things that need to be done to see if your systems are running properly.
+In case of any problem it generates an alert which is usually email, ticket or
+pager call. Sounds simple and there are a lot of similar products in the Internet
+which only proves that one boot can not fit everyone. OSSMON is just one of the
+many way how to perform network monitoring and help administrator to keep track
+what is going on with their network and servers. The primary goal of OSSMON is
+to make the monitoring task as simple as possible, completely Web-based, easily
+configurable and extensible, allowing network administrator customize monitoring
+engine as he/she thinks it should watch their network. There are no hard-coded
+rules in the system, all rules can be defined by administrator which means
+OSSMON can be configured for almost all types of networks and environments.
+
+<IMG SRC=img22.jpg BORDER=0><P>
+
+<DT><A NAME=t12><H4>1.2. Architecture</H4></A>
+
+Now we know what is the purpose of OSSMON, let's examine it from the inside to
+understand how it works and components it consists of: <P>
+
+<IMG SRC=img23.jpg BORDER=0><P>
+
+<UL>
+<LI>OSSMON is a Unix server process, it runs in the background on Linux or any other Unix server.
+<LI>The server platform is <A HREF=http://sourceforge.net/projects/naviserver/>Naviserver</A> -
+a multi-threaded Web server used by America Online to power the busiest sites on the
+internet such as AOL.com, Netscape.com, Mapquest.com and Moviefone.com.
+Naviserver is similar in scope to servers such as BEA Weblogic, IBM's Websphere and
+Apache's Tomcat. The features that make it a strong server include:<BR>
+ - a multi-threaded architecture for extremely efficient performance in high demand environments<BR>
+ - native database APIs for simplified database access<BR>
+ - pooled database connections for fast, readily available database connectivity<BR>
+ - and an embedded scripting language (Tcl) for rapid development of business logic.<BR>
+Naviserver is also open source and is freely available from
+http://sourceforge.net/projects/naviserver/.
+<LI>The core of OSSMON is written in <A HREF=http://www.tcl.tk>Tcl</A> -
+Tool Command Language, scripting language which Naviserver uses as their internal
+engine and application glue.
+<LI><A HREF=http://www.postgresql.org>PostgreSQL</A> database server is used
+as a storage and data model implementation.
+<LI>All low-level networking stuff is done by several modules, like nssnmp, nsdns.
+They are Naviserver modules and written in C/C++. They do implement network protocols
+which are easier to implement in low-level programming language than scripting.
+<LI>Web access implemented in the same environment and using same TCL scripting language.
+<LI><A HREF=http://www.crystalballinc.com/vlad/software>OSSWEB</A> framework is used to
+implement Web access using templates and also it provides many useful functions and
+modules like Web access security, database API, utilities.
+</UL>
+<P>
+All that means in order to run OSSMON only Naviserver, Tcl and PostgreSQL are needed.
+Other optional components can be added later like ossmon agent or snmp agent.
+
+<DT><A NAME=t13><H4>1.3. How OSSMON does it?</H4></A>
+
+The algorithm OSSMON uses to perform monitoring is very simple. Ther are two main
+parameters that controls OSSMON behaviour:<BR>
+<B>alert threshold</B> and <B>silence interval</B>.<P>
+When OSSMON starts monitoring for example router and there are no problems, network is
+up and running, no alerts happen. OSSMON performs polling the router, downloads
+statistics if necessary and do other no-alert activity that needs to be done.
+Then something happens, somebody unplugs the Ethernet cable by the accident that connects
+the router to the network. Next time OSSMON performs polling of this device, no response
+received from the router, ping requests goes unanswered. In this case OSSMON generates
+an alert and increases alert counter for this device which becomes 1 in our case.
+Now to decide whether to send alert notification or not OSSMON checks our device's
+configured alert threshold. Let's assume it is set to 2 which means: <B>Do not generate any
+alert for this device until alert count reaches this threshold, i.e. send an alert only if
+this device do not respond after 2 subsequent monitor polls.</B>.<BR>
+So, in our example, first time we do not receive respond from the router, we do not do anything,
+just record that we had alert condition, set alert count to 1 and mark the time it happened.
+When OSSMON polls the router next time it does not receive any respond again, it increases
+alert counter again and it becomes equal to 2. Now alert condition is met, counter is equal
+to alert threshold and OSSMON generates alert notification.<P>
+So, the meaning of the alert threshold to specify when to notify administrator about alert
+condition, sometimes because of slow network, too low timeout configured, random spikes in
+netweork activity or server load OSSMON may not get response from a device, but the next
+time everything is came to order and no need to perform anything to handle an alert.
+In other words, only persistent errors may be reported, and if administartor is willing to
+ignore those accidental problems he/she can configure OSSMON to send notification after 2,
+3 or more subsequent time any particular device is not responding.Of course,
+it has it own downsize: OSSMON polls the network by default every 5 minutes,
+so second poll will happen approximetely in the next 5 minutes, third one in 10
+minutes. if threshold is configured to 2, then notification about down router will
+be reported after 10 minutes of downtime. It is possible to reduce poling interval
+to 1 minute and make that window 2 minutes.<P>
+Now we have failing device, OSSMON generated and sent notification to the sysadmin.
+But what if that happened at 3 am in the morning, sysadmin is asleep, email is in his Inbox
+but he will wake up at 8 am only and will read email at 8 am. Typical situation, right.
+If we leave OSSMON polling that failed router the whole night and generate alert notification
+by the time sysadmin gets to work he will have hundreds email in the Inbox. To prevent this
+we have another fundamental parameter: silence interval. What it tell to OSSMON is to keep
+silent about an error for specified interval since the time alert has been sent. Let's say
+for our router we have interval configured to 4 hours. It means that next time an alert will
+be sent about that router will be 7 am. So the sysadmin will get only 2 emails about the router
+which is good enough to make him notice and do not fill up the mailbox. If for some reason
+he will not be at the office in the morning and gets to work at 3 pm only, he will get only 3
+emails only because OSSMON will be sending notifications every 4 hours. But OSSMON will keep
+complete history in the database, every poll and every alrt condition is logged and sysadmin can
+examine alert log for more information.<P>
+Once the problem fixed and connectivity to the router is restored, alert is kept open for some
+time just in case the problem comes back again. This happens often with failing interfaces,
+sysadmin makes the interface up and after some time due to DoS attack for example the router
+puts the interface down again, so OSSMON will pick up previous alert and reuses it instead of
+creating the new one. This will keep database from growing fast and will help mantaining
+good history about alerts. If nothing happens, the alert is changed to Pending, which
+still can be reused but it does not appears as active open error condition
+in the reports and console. If no problem happens after that for some(configured) time,
+the alert gets closed.<P>
+This is pretty much it how OSSMON operates, alert conditions may vary, rules that generate
+that alert also can be different, thresholds and intervals can be configured for each device, monitor,
+alert type or device type, but alert handling will still be based on threshold and interval
+combination.
+
+<DT><A NAME=t14><H4>1.4. Devices, Monitors</H4></A>
+
+OSSMON operates with two primary objects: devices and monitors. Device as it says from the name
+is physical device on the network like router, switch, Web server. It has IP address, name,
+vendor, location attributes which identifies it and differs from other device. In order to
+monitor device should be created in the OSSMON database, something similar to small inventory
+system where OSSMON keeps network configuration. Devices can build hierarchy where one device
+depends on another in networking sense, i.e. if parent device is working properly that enables
+access to sub devices, if parent is unavailable, no way to reach subdevices either. This is
+mainly true for switches and routers when one interface looks to one side of the network and
+another interface connects to different part of network. If both interfaces are running,
+packets flow from one network to another, but when one of the interfaces are down on the
+main router, access to another network is broken as well. In this case no point in polling
+devices on that network until we fix our main router. By creating such network hierarchy
+in the OSSMON it is possible to avoid unnecessary polling and producing alerts for subdevices
+if parent device is down.<P>
+
+The monitoring itself is perfomed by device monitors, special objects which define what kind of
+polling will be done for any particular device. A monitor defines the protocol which is used
+for device polling, like ICMP, SNMP, POP3, HTTP and etc. Device can have many different
+monitors and they will poll the device independentely from each other using its own protocol.
+Alerts produced by monitors belong to their device, not to each individual monitor. that allows
+to combine and reuse similar alerts because different monitors can produce same type of alert,
+for example No Response Alert. Only one noResponse alert will be created for the device even if
+SNMP, POP3 and HTTP monitors will no receive any responses from the real device.
+
+<DT><A NAME=t15><H4>1.5. Rules</H4></A>
+
+Now, once we have our small network configured in the OSSMON database and started polling
+all devices the question remains how we will be notified network or server failures. The
+goal here is to watch for the devices, not to keep them in the database. OSSMON provides
+very flexible way to define what an alert is and when to fire it by introducing
+<B>Alert Rules</B>. Each monitor once created in the server's memory is basically a set
+of different attributes or name-value pairs. For example, we have monitor for watching
+disk usage on the Windows server by using SNMP monitor and polling for hrStorageTable
+from HOST-RESOURCES MIB. The table may look like this:<P>
+
+<TABLE BORDER=1 CELLSPACING=1 CELLPADDING=0 BGCOLOR=#EEEEEE>
+<TR><TH>hrStorageIndex</TH>
+    <TH>hrStorageType</TH>
+    <TH>hrStorageDescr</TH>
+    <TH>hrStorageAllocationUnits</TH>
+    <TH>hrStorageSize</TH>
+    <TH>hrStorageUsed</TH>
+    <TH>hrStorageAllocationFailures</TH>
+</TR>
+<TR><TD>1</TD>
+    <TD>hrStorageFixedDisk</TD>
+    <TD>Disk C:</TD>
+    <TD>4096</TD>
+    <TD>20971520</TD>
+    <TD>14583039</TD>
+    <TD>0</TD>
+</TR>
+<TR><TD>1</TD>
+    <TD>hrStorageFixedDisk</TD>
+    <TD>Disk D:</TD>
+    <TD>4096</TD>
+    <TD>20971520</TD>
+    <TD>120066</TD>
+    <TD>0</TD>
+</TR>
+</TABLE>
+<P>
+When SNMP monitor retrieves this table it runs alert rules 2 times for each row. For example,
+local variables for the first row will look like this:<P>
+<UL>
+<LI>hrStorageIndex = 1
+<LI>hrStorageType = hrStorageFixedDisk
+<LI>hrStorageDescr = Disk C:
+<LI>hrStorageAllocationUnits = 4096
+<LI>hrStorageSize = 20971520
+<LI>hrStorageUsed = 14583039
+<LI>hrStorageAllocationFailures = 0
+</UL>
+<P>
+Now we define alert rule which will produce an alert when there will be less than
+10Mb free space. We will use same language we use for creating web templates in the
+OSSWEB framework and alert templates in the OSSMON( will be explained later). Briefly,
+refering to @hrStorageSize@ will give us value of atribute hrStorageSize as 20971520.
+The rule will look like this:<P>
+
+<B>if @hrStorageSize@ - @hrStorageUsed@ &lt; 1000000 then create email alert "Disk Space Problem"</B><P>
+
+This is not exact syntax, just to give an impression how they work. Actual rules are defined
+using Web GUI interface, but refering to monitor's variables still be the same.So OSSMON alert
+engine will run this rule for every monitor. If ther is no such variable in the monitors
+cache, variable will return empty string "", so the rule will be ignored. Returning to our
+example above after our SNMP monitor received the table, OSSMON alert engine will run the
+disk rule and produce Disk Space Problem email alert for row 1, because we have less than 4Gb
+available on disk C:. Alert type Email tells that notification will be sent via email,
+there is also another method problem which will create trouble ticket in the
+Task/Problem OSSWEB system if installed.<P>
+To summarize, OSSMON monitors polls and collects data into local memory as name-value pairs and
+then alert rules are run for every monitor's row and if condition is met alert is created.
+
+<DT><A NAME=t16><H4>1.6. Agents</H4></A>
+
+Every device on the network is an agent if it responds on requests. We can send
+different types of requests like ICMP, HTTP, SNMP and if device supports requested protocol
+it will respond. For network devices ICMP protocol usually automatically available and any
+IP device must respond to it. So at very least we can monitor devices using ICMP protocol(ping).
+By collecting response time we can then produce statistical charts about network
+performance during period of time. Sometimes, just monitoring using pings is not enough,
+we may need more information about devices perfomance, critical resources. The next most widely
+used protocol for is SNMP. Almost every networking devices supports it, it may be enabled,
+configured, secured and used for monitoring. SNMP allows us to retrieve much more information
+about what is going on with any device or network. For servers, Windows or Unix, only ICMP
+monitoring ussually is available by default, SNMP agent or service should be configured to
+run and respond to requests. <P>
+For Windows, SNMP service is included with Windows XP or Win2000
+servers. If it is not installed, go to Control Panel|Add/Remove Programs and click on
+Add/Remove Windows Components. Then check on Management and Monitoring Tools and click on Next.
+After Windows installed SNMP service go to Administrative Tasks|Services and enable
+SNMP Service. <P>
+For Unix servers there are many different SNMP agents available, OSSMON
+primarily has been tested with <A HREF=http://net-snmp.sourceforge.net/>Net-SNMP</A>
+SNMP agent. It is open-sourced project provides very powerful agent with support for
+many Unix specific features like process tables, disk tables, fixing failed processes.
+Using Net-SNMP agent extensible architecture, OSSMON adds extra features to this agent
+such as syslog monitoring, killing arbitrary process, retrieveing log files. Script and
+config file that adds such features are provided with OSSMON distribution.
+
+<DT><A NAME=t17><H4>1.7. Requirements</H4></A>
+
+In order to run OSSMON only Naviserver and PostgreSQL are required. Naviserver needs
+Tcl to be compiled with threading support. Also the following modules have
+to be installed and running:<P>
+<UL>
+<LI>nsdb
+<LI>nsdbpg
+<LI>nssnmp
+<LI>nsicmp
+<LI>nssys
+<LI>nsdns
+<LI>nsgdchart
+<LI>nslog
+<LI>nssock
+<LI>nsimap
+<LI>nsudp
+</UL>
+<P>
+<A HREF=http://sourceforge.net/projects/naviserver/>Naviserver</A> does not require any modifications and
+all modules can be used from the distribution.
+</DL>
+
+<OL>
+
+<OL>
+
+<LI><A NAME=t2><H3>Installation</H3></A>
+
+OSSWEB is being developed using PostgreSQL 7.3 and has no other database
+support at this time. By default installation assumes that you have
+PostgreSQL 8.0 or higher installed.<P>
+
+PostgreSQL can be downloaded from <A HREF=http://postgresql.org/>http://postgresql.org/</A>.<BR>
+Naviserver, OSSWEB and modules from <A HREF=http://www.crystalballinc.com/vlad/software/>http://www.crystalballinc.com/vlad/software/</A>.<P>
+
+<DL>
+
+<DT><A NAME=t21><H4>2.1. PostgreSQL</H4></A>
+
+If PostgreSQL is already installed and running go to section about OSSWEB installation.<P>
+
+Typical new PostgreSQL installation from sources (non-root) if it is not already installed:<P>
+
+<PRE STYLE="background-color: #EEEEEE">
+   tar -xzf postgresql-8.1.4.tar.gz
+   cd postgresql-8.1.4
+   ./configure --with-tcl --with-openssl --enable-thread-safety
+   make install
+
+   cd contrib
+   make install
+
+   mkdir -p /usr/local/pgsql/db /usr/local/pgsql/logs
+
+   /usr/local/pgsqlbin/initdb -D /usr/local/pgsql/db
+
+   echo '#!/bin/bash' > /usr/local/pgsql/bin/pgsql.start
+   echo "USER=`whoami`" >> /usr/local/pgsql/bin/pgsql.start
+   echo 'su $USER -c "nohup /usr/local/pgsql/bin/postmaster -D /usr/local/pgsql/db $@ >/usr/local/pgsql/logs/pgsql.log 2>&1 </dev/null&"' >> /usr/local/pgsql/bin/pgsql.start
+
+   chmod +x /usr/local/pgsql/bin/pgsql.start
+
+   /usr/local/pgsql/bin/pgsql.start
+</PRE>
+<P>
+To start PostgreSQL server on machine during the boot just call /usr/local/pgsql/bin/pgsql.start script,
+for example from /etc/rc.d/rc.local file.<BR>
+Become root and then issue the following command:<P>
+
+<PRE STYLE="background-color: #EEEEEE">
+   su
+   echo '/usr/local/pgsql/bin/pgsql.start' >> /etc/rc.d/rc.local
+</PRE>
+<P>
+
+<DT><A NAME=t22><H4>2.2. OSSWEB/OSSMON</H4></A>
+
+OSSWEB installation include several steps: database creation,
+data model installation, web application installation. Once you have
+database up and running, OSSWEB installation simply requires the
+following command.<P>
+
+<PRE STYLE="background-color: #EEEEEE">
+   cvs -z3 -d:pserver:anonymous@naviserver.cvs.sourceforge.net:/cvsroot/naviserver co -P naviserver modules
+
+   cd naviserver
+   ./autogen.sh --disable-tclvfs
+   make install
+
+   cd ../modules
+   make -C nssnmp snmp_pp install
+   for m in nsdbpg nssys nsdns nsgdchart nsimap nsudp; do
+     make -C $m install
+   done
+
+   wget ftp://ftp.crystalballinc.com/pub/vlad/ossweb.tar.gz
+   tar -xzf ossweb.tar.gz
+
+   cd ossweb
+   make create_db
+   make install_db
+   make install
+
+   cd ossmon
+   make install_db
+   make install
+</PRE>
+<P>
+<OL>
+<LI>create_db creates OSSWEB database 'ossweb'.<P>
+
+    create_db command should be run by PostgreSQL superuser because it creates database and
+    requires privileges to assign languages to the database.<P>
+
+    If your PostgreSQL installation directory is not /usr/local/pgsql, then add
+    pgsql_dir=dirname to your make calls.<P>
+
+    <PRE STYLE="background-color: #EEEEEE">
+    su postgres
+    make create_db pgsql_dir=/var/lib/postgresql
+    </PRE>
+    <P>
+    If you want OSSWEB to connect to PostgreSQL as different user,
+    add dbuser=user to every make command:<P>
+
+    <PRE STYLE="background-color: #EEEEEE">
+    su postgres
+    make create_db dbuser=nobody
+    </PRE>
+   <P>
+
+   NOTE: OSSWEB requires tsearch2 module from PostgreSQL contrib, it will try
+   to autodetect and install it if contrib modules have been compiled and installed
+   with PostgresQL
+
+<LI>install_db creates all tables and functions for each module<P>
+
+   Once database is created, make install_db should be run as the user who will be connecting
+   to OSSWEB database, if the same PostgreSQL superuser, then just:<P>
+   <PRE STYLE="background-color: #EEEEEE">
+   make install_db
+   </PRE>
+   <P>
+   or if dbuser was nobody in previous command<P>
+   <PRE STYLE="background-color: #EEEEEE">
+   su nobody
+   make install_db dbuser=nobody
+   </PRE>
+   <P>
+<LI>install creates directory structure and copies all tcl and adp files<P>
+
+   install command requires write privileges on /usr/local/ns directory,
+   it copies web pages and scripts.
+</OL>
+
+<P>
+
+If during OSSWEB installation you specified different dbuser, for example nobody, then call
+make install_db dbuser=nobody as well.<P>
+
+<PRE STYLE="background-color: #EEEEEE">
+su nobody
+make install_db dbuser=nobody
+</PRE>
+
+<P>
+OSSMON has default nsd.tcl config file which can be used by copying it
+into /usr/local/ns/conf. It has all required modules configured and by
+default setup to be run as nobody.
+<P>
+By default the following directory structure is allocated and used:<P>
+
+<PRE STYLE="background-color: #EEEEEE">
+
+/usr/local/pgsql
+             bin                  - PotsgreSQL binaries
+             db                   - database files
+             logs                 - logs files
+             include              - header files
+             lib                  - shared libraries, pl modules
+             shared               - db templates
+
+/usr/local/ns
+             bin                  - binaries and modules
+             conf                 - config files, nsd.tcl
+             include              - header files
+             lib                  - shared libraries
+             logs                 - log files
+             tcl                  - common Tcl procs
+                ossweb            - OSSWEB/OSSMON Tcl modules
+             pages                - html page root
+                js                - Javascript files
+                css               - style sheet files
+                img               - images/icons
+                snd               - sound alerts
+                ossweb
+                   admin          - OSSWEB admin pages
+                   main           - OSSWEB prefs pages
+                   pub            - OSSWEB public/login pages
+                   index          - OSSWEB index pages
+                   ossmon         - OSSMON web pages
+                       charts     - OSSMON generated charts
+             modules
+                xql               - OSSWEB/OSSMON SQL files
+
+</PRE>
+
+<DT><A NAME=t23><H4>2.3. OSSMON Agent</H4></A>
+
+OSSMON agent may be used to support additional features like syslog files monitring, process
+fixing and killing, ps and netstat output. If used with Net-SNMP agent it will do automatic
+process fix when prErrFix variable is set to 1 by OSSMON in case of prTable contains
+errors.<P>
+
+<TABLE BORDER=1 WIDTH=100% CELLSPACING=0 CELLPADDING=0 BGCOLOR=#EEEEEE>
+<TR><TH>prIndex</TH><TH>prNames</TH><TH>prMin</TH><TH>prMax</TH><TH>prCount</TH><TH>prErrorFlag</TH><TH>prErrMessage</TH><TH>prErrFix</TH><TH>prErrFixCmd</TH></TR>
+<TR><TD>1</TD><TD>/usr/local/sbin/sshd</TD><TD>0</TD><TD>0</TD><TD>3</TD><TD>1</TD><TD>No ssh process running</TD><TD>0</TD><TD>/usr/local/ns/bin/ossmon.tcl fix ssh</TD></TR>
+<TR><TD>2</TD><TD>/usr/local/ns/bin/nsd</TD><TD>0</TD><TD>0</TD><TD>13</TD><TD>0</TD><TD>&nbsp;</TD><TD>0</TD><TD>/usr/local/ns/bin/ossmon.tcl fix nsd</TD></TR>
+<TR><TD>3</TD><TD>/usr/local/pgsql/bin/postmaster</TD><TD>0</TD><TD>0</TD><TD>1</TD><TD>0</TD><TD>&nbsp;</TD><TD>0</TD><TD>/usr/local/ns/bin/ossmon.tcl fix postmaster</TD></TR>
+</TABLE>
+<P>
+The following commands are supported by ossmon.tcl agent, they can be called from
+shell command line as well:<P>
+<UL>
+<LI> psTable - process list from ps -ef
+<LI> netstatTable - network connections from netstat -n
+<LI> syslogTable - returns lines from watched syslog files
+<LI> pingTable - performs pinging remote host from ping:host cache entry
+<LI> tailTable - list contents of the file from tail:file cache entry
+<LI> killProcess - kill process by given comma separated process IDs<BR>
+     format: -s OID.pid integer signal<BR>
+     example: ossmon.tcl killProcess -s .1.3.6.1.4.1.19804.2.1234 integer 9<BR>
+        sends signal 9 to process 1234
+<LI> event - SNMP SET events:<BR>
+   -s .1.3.6.1.4.1.19804.3.1 string FILENAME - saves file name for tailTable request in tail:file cache entry<BR>
+   -s .1.3.6.1.4.1.19804.3.2 string -SIGNAL PID PID... - kills processes by pid<BR>
+   -s .1.3.6.1.4.1.19804.3.3 string PROCNAME - fixes process by name<BR>
+   -s .1.3.6.1.4.1.19804.3.4 string HOSTNAME - saves host name for pingTable request in ping:host cache netry
+<LI> util - utilities:<BR>
+     config-get - returns config value by name<BR>
+     config-list - returns all config parameters<BR>
+     cache-list - returns all cache entries<BR>
+     cache-check - returns 1 if given entry is duplicate<BR>
+     cache-set - sets new caceh entry<BR>
+<LI> snmpd - snmpd agent restart/check status<BR>
+     check - checks if snmpd process is running, if not then starts it<BR>
+     restart - restarts snmpd agent<BR>
+<LI> fix - fixes failed process by name
+<LI> fixscript - returns script ot be used for fixing given process by name
+</UL>
+<P>
+To install OSSMON agent, please perform the following actions:<P>
+<PRE STYLE="background-color: #EEEEEE">
+   cd ossmon
+   make install_ossmon
+</PRE>
+<P>
+If Net-SNMP is already installed, call it as
+/usr/sbin/snmpd -c /usr/local/ns/conf/snmpd.conf<P>
+
+To install new Net-SNMP agent, please perform the following actions:<P>
+<PRE STYLE="background-color: #EEEEEE">
+   wget ftp://ftp.crystalballinc.com/pub/vlad/net-snmp-5.0.9-vlad.tar.gz
+   tar -xzf net-snmp-5.0.9-vlad.tar.gz
+   cd net-snmp-5.0.9
+   ./configure --prefix=/usr/local/ns
+   make install
+</PRE>
+<P>
+By default the following directory structure is allocated and used:<P>
+
+<PRE STYLE="background-color: #EEEEEE">
+/usr/local/ns
+             bin                  - ossmon.tcl, SNMP binaries
+             conf                 - ossmon.conf, snmpd.conf
+             logs                 - log files
+             lib                  - SNMP libraries
+             include              - SNMP headers
+             mibs                 - SNMP MIB files
+             logs                 - runtime/cache files
+</PRE>
+
+Net-SNMP is configured to use ossmon.tcl as process fixing script and OSSMON-aware
+snmpd.conf file will be put in /usr/local/ns/conf to be used by snmpd on startup
+and bind OSSMOB-MIB variables to ossmon.tcl script as well. <P>
+This /usr/local/ns directory should be installed on remote Unix/Linux servers
+to be monitored and run <B>/usr/sbin/snmpd -f /usr/local/ns/conf/snmpd.conf</B> on server startup.
+</DL>
+
+</OL>
+
+<OL>
+
+<LI><A NAME=t4><H3>Running OSSMON</H3></A>
+<DL>
+<DT><A NAME=t41><H4>4.1. Web interface</H4></A>
+The only way to access OSSMON is via Web browser. All configuration is kept in the database, there are no
+any text config files except for Naviserver itself. By default OSSMON is running on port <B>4080</B>.
+Type in in the browser location prompt the <A HREF=http://localhost:4080/ossweb/>
+<B>http://localhost:4080/ossweb/</B></A> and login screen appears. There is user <B>admin</B> with
+password <B>admin</B> after the OSSMON installation. there are two types of OSSMON installation:
+full OSSWEB/OSSMON and OSSMON-demo. If you installed OSSMON from sources with OSSWEB it will install all
+OSSWEB modules as well. Default binary installation of OSSMON includes only basic OSSWEB modules and
+OSSMON. The visual difference between these two installtions is that in OSSMON-demo you will see
+fewer menu items. In this manual we will use full OSSWEB/OSSMON installation.<P>
+
+<DT><A NAME=t42><H4>4.2. Main screen</H4></A>
+After login you will see pretty empty web page with left side menu items. This is default OSSWEB layout.
+Clicking on menu folder will open it and will show all menu items it contains.
+For now we only interested in the menu items under the OSSMON folder.<P>
+
+<DT><A NAME=t43><H4>4.3. Adding a device</H4></A>
+As we described above to start monitoring something we have to add a device. Clicking on menu item
+<B>Devices</B> brings us the page with all devices configured in OSSMON database.<P>
+
+<A HREF=img2.jpg TARGET=Img><IMG SRC=img2.jpg BORDER=0></A><P>
+
+So we add new device localhost to monitor local host activity. Put 127.0.0.1 as device IP address
+and other information describing your local machine.<P>
+There are may be only limited devices on the top level, i.e. without parent in the OSSMON
+device tree. The reason is that for each top level device(or group) OSSMON spawns separate thread
+and perform monitoring all groups simultaneously. Having too many threads will result in
+poor server performance, because each tread consumes CPU and memory. Processing each group,
+OSSMON can fire additional threads if it sees that some devices or subtrees have too
+many monitors and polling them one by one will take to much time.<P>
+
+<A HREF=img3.jpg TARGET=Img><IMG SRC=img3.jpg BORDER=0></A><P>
+
+Once device record is in the database we can start monitoring various resource on this device. Let's
+start with simple ping, ICMP protocol. Click on <B>Add Monitor</B> button to add device monitor,
+then select <B>Ping</B> from the Monitor Type select box. Other monitor attributes are optional and
+we can leave them empty or with their default values. The attribute worth mentioning is
+<B>Collect Statistics</B> select box, if selected Yes, this monitor will store collected values in
+the database so later it will be possible to produce perfomance/statistical charts.<P>
+
+<A HREF=img5.jpg TARGET=Img><IMG SRC=img5.jpg BORDER=0></A><P>
+
+Clicking on "<B>Add</B> button will create Ping monitor. To return to device detail page, Back
+button or link on the monitor title can be used.<P>
+So now returning to our device we can see that it has one Ping monitor.<P>
+
+There is small icon in front of monitor name, when you click on it it will poll the monitor and
+return what it received. In case of our Ping monitor it will show us that we sent 5 ICMP packerts
+and received back 5 answers. You can see min, average and max time in milliseconds it took
+packets to arrive back.<P>
+
+<A HREF=img7.jpg TARGET=Img TITLE="Click to enlarge"><IMG SRC=img7.jpg BORDER=0></A><P>
+
+ If this monitor has Collect statistics attribute set to Yes, OSSMON
+will keep packet return time in the databas and can produce graphical charts showing how long it
+took ICMP packets to arrive over period of time<P>
+
+<A HREF=img15.jpg TARGET=Img TITLE="Click to enlarge"><IMG SRC=img15.jpg BORDER=0></A><P>
+
+Clicking on the small icon in front of interface monitor will show information from interface table
+of the host. <P>
+
+<A HREF=img9.jpg TARGET=Img TITLE="Click to enlarge"><IMG SRC=img9.jpg BORDER=0></A><P>
+
+If <B>Collect Statistics</B> for the interface monitor is set to Yes, graphical charts
+show interface utilization and other network statistics.<P>
+
+<A HREF=img14.jpg TARGET=Img TITLE="Click to enlarge"><IMG SRC=img14.jpg BORDER=0></A><P>
+
+By default interface monitor retrieved all interfaces from the host. It is possible to specify
+what interfaces you are interested of in the <B>Filter</B> attribute. Let's poll
+for <B>eth0</B> interface only.<P>
+
+<A HREF=img10.jpg TARGET=Img TITLE="Click to enlarge"><IMG SRC=img10.jpg BORDER=0></A><P>
+After entering eth0 and updating the monitor we will receive information about eth0 interface only.
+This filter is actually a regexp expression, so it is possible to specify pattern which can have
+more than one interface, for example <B>"eth0|ppp|et1.1"</B>.<P>
+
+<DT><A NAME=t44><H4>4.4. Configuring monitors</H4></A>
+Usually monitors do not need any additional configuration but it is possible to
+modify their behaviour using confguration parameters. The OSSMON uses configuration
+inheritance when operates devices and monitors: First parameters is looked in the local
+monitor's config cache, then in parent device's cache and then in global configuration.
+So, for example if we have global alert email configured such as alerts will be sent
+to our system administrator, but one device is in special testing mode and alerts should
+be delivered to developer. So we go to that monitor config page and specify <B>Aler Email</B>
+parameter with different email address.<P>
+
+<A HREF=img13.jpg TARGET=Img TITLE="Click to enlarge"><IMG SRC=img13.jpg BORDER=0></A><P>
+
+Same way it is possible to change other things, like polling interval, timeouts,
+system level data like SNMP community or password. Three level configuration hierarchy
+allows flexible ways to customize devices and monitors monitoring.
+
+<DT><A NAME=t45><H4>4.5. Real time console</H4></A>
+For Operation Support centers or Help Desks it is very usefull to have a full picture about
+what is going on with the network. Something like real-time console which tells which node in the network
+has problems. For this purpose OSSMON provides console web page which refreshes itself and
+displays real-time information about the devices and alerts.<P>
+
+<A HREF=img17.jpg TARGET=Img TITLE="Click to enlarge"><IMG SRC=img17.jpg BORDER=0></A><P>
+
+Default mode is to show top level devices only, but if some device under any top level device has problems,
+corresponding top level device will be red or orange as well, so it is possible to browse down and locate
+the device producing alerts. This way one web page displays the status about the whole network regardless
+of the network size. The number of top level devices of course shlould be reasonable to fit one even big
+screen. The small triangles on the device cell pointing down are links to expand top level device and
+show its subdevices. clicking on device name gives details about the device, clicking on device monitors or
+alert links will open popup windows with corresponding details.<P>
+Special tab "Charts" is provided similar to MRTG index page where several performance charts are displayed
+on the same page for quick overview. To add monitor chart to the console, just set "Realtime Charts" parameter
+to Yes on the monitor details page. Keep in mind that only one monitor per device will be displayed
+on the realtime Charts console.<P>
+
+<A HREF=img24.jpg TARGET=Img TITLE="Click to enlarge"><IMG SRC=img24.jpg BORDER=0></A><P>
+
+<DT><A NAME=t46><H4>4.6. Templates</H4></A>
+
+<DT><A NAME=t47><H4>4.7. Alerts</H4></A>
+
+Every time device monitor is unable to complete polling or execution of an alert rule results in
+creating alert, special object is created in the OSSMON database called an alert. Alert always
+belongs to some device and has type and name. If device has several interface monitors, polling
+different interfaces on the same device, they will produce different alerts for different
+interfaces but only one alert record will be created for this particular device about interface failure.
+To access just alert records there is Alerts web page which provides filtering by status and names. <P>
+
+<A HREF=img16.jpg TARGET=Img TITLE="Click to enlarge"><IMG SRC=img16.jpg BORDER=0></A><P>
+
+Clining on alert record will show alert details where you can close or delete this alert, update notes and
+see full history about the event.<P>
+
+<A HREF=img19.jpg TARGET=Img TITLE="Click to enlarge"><IMG SRC=img19.jpg BORDER=0></A><P>
+
+<DT><A NAME=t48><H4>4.8. Alert Rules</H4></A>
+
+Alers engine is just a rule processor. Because every monitor is set of name-value pairs or variables,
+alert rules are built such as when some particular variable equal or somehow related to some value,
+perform alert generation with some template. Each alert has a name and can have alert interval and threshold
+parameters which will be applied when such alert event occurs. They will override default alert
+interval/threshold but not device/monitor specific ones.<P>
+
+<A HREF=img20.jpg TARGET=Img TITLE="Click to enlarge"><IMG SRC=img20.jpg BORDER=0></A><P>
+
+For alert rules there are two modes: ALERT and FINAL. OSSMON executes alert rules twice, just after
+poll completed, all alert rules are executed for each monitor or table row. This stage is called ALERT.
+Second time OSSMON executes alerts marked as FINAL, this is time when all polling is completed, alerts are
+handled and OSSMON is ready to proceed with final alert processing, like executing final rules, sending
+out pending emails or generating trouble tickets. For final rules, special interes is using
+<B>gregexp</B> and <B>gmatch</B> operators.They will allow to create rules that check monitors for
+existence of some variable/value pairs. For example, default OSSMON rules include demo rule
+that checks hrSWRunTable for svrany.exe process. If not running, it will create an alert. This rule
+should be executed only once, because we are checking just one process on the remote server,
+therefore FINAL mode for alert rules.<P>
+
+<PRE STYLE="background-color: #EEEEEE">
+<if hrSWRunName !gregexp svrany.exe Then ProcesNotRunningAlert end If
+</PRE>
+
+The difference of using gregexp and regexp is that regexp uses @name@ in the left part and gregexp
+just name. gregexp will search the whole monitor's table for variable with the name hrSWRunName and check
+if its value equal to svrany.exe.<P>
+In case of regular rule, where regexp is used, the OSSMON will substitute
+@hrSWRunName@ with actual value from the monitor's row and will execute rule's condition.
+Consider an alert rule that check for virus process existence, OSSMON will execute this rule
+for every  row of hrSWRunTable and if any process name will match, alert will be created.<P>
+
+<PRE STYLE="background-color: #EEEEEE">
+<if @hrSWRunName@ regexp trojan.exe Then VirusIsRunningAlert end If
+</PRE>
+
+<P>
+In the rule builder, the variable is specified using same syntax as in the templates, variable is refered as
+@name@ where name is name of the variable. It is possible to do operators grouping by using () in before
+first variable in the group and after the last one. It is possible to execute more than one template if
+necessary. Each template will create different alert record.<P>
+
+<A HREF=img21.jpg TARGET=Img TITLE="Click to enlarge"><IMG SRC=img21.jpg BORDER=0></A><P>
+
+Rule condition consists from one or more "leftpart operator rightpart"
+expressions. Both left and right parts can contain as variables as well as constants,
+see full list of variables below.<P>
+Operators are the following:<P>
+<UL>
+<LI>= - equal, case sensitive
+<LI>!= - not equal
+<LI>&gt; - greater
+<LI>&lt; - less
+<LI>&gt;= - greater or equal
+<LI>&lt;= - less or equal
+<LI>contains - case sensitive, if left part contains exactly the whole right part
+<LI>not contains - if left part does not contain right part
+<LI>match - pattern matching,
+<LI>not match = does not match parttern
+<LI>regexp - regualar expression
+<LI>not regexp - does not match regualr expression
+<LI>gmatch - global match, pattern matching but performs search in the
+    whole monitor, not just current row. Usefull for checking globally if monitor contains
+    name:value pair in any row.
+<LI>not gmatch - monitor does not have variable matching the given pattern
+<LI>gregexp - global regexp, same as match but does regualr expression matching in all rows
+<LI>gregexp - monitor does not have variable matching the given regexp
+</UL>
+<P>
+By default all conditions are connected with AND, but can be grouped with OR
+as well. Expression builder GUI does not understand () grouping but it can be
+achieved by setting (before first expression and close with ) in the last
+expression.<P>
+
+<PRE STYLE="background-color: #EEEEEE">
+   Example:  AND monitor:type = ifTable
+             AND (ifDescr contains "ppp"
+             OR ifAdminStatus = "down")
+</PRE>
+<P>
+In some cases like in interface counter the number can be huge, bigger than integer,
+then it should be converted to double internally to perform calculations. In this case
+argument -dobule should be used.<P>
+
+<PRE STYLE="background-color: #EEEEEE">
+Example: @ifOutOctets -double@ > 0
+</PRE>
+<P>
+If value refers to a variable it should be embraced with @ character, like @name@.
+<P>
+Special case of @name@ notation is defaults:
+   the format is @name^defautl@, which means use variable name and if empty return default<P>
+
+<PRE STYLE="background-color: #EEEEEE">
+Example: @interface:utilization:threshold^75@
+</PRE>
+<P>
+If rules entered incorrectly or contains syntax errors Naviserver error log will contain
+Tcl error messages in /usr/local/ns/logs/nsd.log.
+<P>
+The following alert types are supports:<P>
+<UL>
+<LI><B>Email</B> - sends email with alert template, sends to all email addresses
+    specified by *:email:* properties, i.e., any property with email keywor in it.
+    In order to be sent , at least ossmon:alert:email shoudl be set globally or
+    for each device.<P>
+<LI><B>Problem</B> - creates Problem/Task record, problem project should be setup,
+    be default it is OSSMON project. All alerts will be kept in problem tool and
+    can be treated as trouble tickets with complete history how the problem was
+    resolved. OSSMON will auto-complete the task if next poll will be successfull,
+    i.e. change task status to Complete. This can be customize by setting
+    global or per device problem related properties.<P>
+<LI><B>Exec</B> - executes external program on alert, passes template data on
+    standard input of the program.<P>
+<LI><B>SNMP Trap</B> - sends SNMP trap to configured host, requires at least trap host
+    to be set globally or per device. By default it sends ID as ossmon and sends
+    subject and first line of the template as trap variables.<P>
+<LI><B>Syslog</B> - sends alert template to local syslog
+</UL>
+<P>
+
+List of global object variables:<P>
+<UL>
+<LI>monitor:name - monitor name
+<LI>monitor:host - hostname or IP address
+<LI>monitor:type - type of the monitor
+<LI>time:alert - time when alert happend in seconds
+<LI>device:id - device id
+<LI>device:name - device name
+<LI>device:type - device type
+<LI>device:location - address of the device
+<LI>parent:id - id of the parent device
+<LI>monitor:columns - list of columns in the monotor result
+<LI>alert:rownum - sequential alert number, starts with 1
+<LI>ossmon:status - status of the monitor polling: error, noConnectivity, noResponse
+<LI>ossmon:type - type of monitor: poll or trap
+</UL>
+<P>
+Each object also contains specific variables according to monitor:columns:
+<P>
+<UL>
+
+<LI><B>dns</B> - Monitors remote DNS servers by making DNS requests.
+    <OL>
+    <LI>dnsHost - host requested
+    <LI>dnsType - type of the request
+    <LI>dnsStatus - status of the poll
+    </OL>
+
+<LI><B>http</B> - Monitors remte HTTP servers by making HTTP requests
+    <OL>
+    <LI>httpHost - host requested
+    <LI>httpStatus - reply status line
+    <LI>httpTime - time the request took
+    </OL>
+
+<LI><B>radius</B> - Monitors remote RADIUS servers by making RADIUS requests
+    <OL>
+    <LI>radiusHost - host requested
+    <LI>radiusStatus - reply status
+    </OL>
+
+<LI><B>ifTable</B> - Monitors remote interfaces by retrieving ifTable table and monitoing
+    ifAdminStatus, if OperStatus fields. Produces performance charts.
+    <OL>
+    <LI>sysUpTimeInstance
+    <LI>ifIndex
+    <LI>ifDescr
+    <LI>ifType
+    <LI>ifMtu
+    <LI>ifSpeed
+    <LI>ifAdminStatus
+    <LI>ifOperStatus
+    <LI>ifInOctets
+    <LI>ifOutOctets
+    <LI>ifInDiscards
+    <LI>ifOutDiscards
+    <LI>ifInErrors
+    <LI>ifOutErrors
+    <LI>interface:time:delta - time between pools
+    <LI>interface:utilization - interface utilization, 0-100%
+    <LI>interface:rate:in - inbound transfer rate, bytes/sec
+    <LI>interface:rate:out - outbound transfer rate, bytes/sec
+    <LI>interface:rate:in:drop - inbound drop rate
+    <LI>interface:rate:out:drop - outbound drop rate
+    <LI>interface:rate:out:error - outbound error rate
+    <LI>interface:rate:in:error - inbound error rate
+    <LI>interface:rate:in:transfer - inbound transfer volume since last poll
+    <LI>interface:rate:out:transfer - outbound transfer volume since last poll
+    </OL>
+
+<LI><B>mailbox</B> - Monitors local or remote mailbox via IMAP, alerts about emails that
+    match provided filters
+    <OL>
+    <LI>mailboxFrom - from header
+    <LI>mailboxTo - to header
+    <LI>mailboxSubject - email subject
+    <LI>mailboxBody - email body, as is
+    <LI>mailboxText - text part of the messages
+    <LI>mailboxFiles - attached file names
+    </OL>
+
+<LI><B>ping</B> - Monitors network connectivity using ICMP pings
+    <OL>
+    <LI>pingSent
+    <LI>pingReceived
+    <LI>pingLoss
+    <LI>pingRttMin
+    <LI>pingRttAvg
+    <LI>pingRttMax
+    </OL>
+
+<LI><B>pop3</B> - Monitors remote POP3 server by authenticating with it
+    <OL>
+    <LI>pop3Host - requested host
+    <LI>pop3Status - status of the poll or server reply message
+    </OL>
+
+<LI><B>ftp</B> - Monitors remote FTP server by authenticating with it
+    <OL>
+    <LI>ftpHost - requested host
+    <LI>ftpStatus - status of the poll or server reply message
+    </OL>
+
+<LI><B>tcp</B> - Monitors remote server by connecting to specified TCP port
+    <OL>
+    <LI>tcpHost - requested host
+    <LI>tcpRequest - request sent
+    <LI>tcpReply - status of the poll
+    <LI>tcpTime - time the request took
+    </OL>
+
+<LI><B>udp</B> - Monitors remote server by sending UDP packet to specified port
+    <OL>
+    <LI>udpHost - requested host
+    <LI>udpRequest - request sent
+    <LI>udpReply - status of the poll
+    <LI>udpTime - time the request took
+    </OL>
+
+<LI><B>smtp</B> - Monitors remote SMTP server by connecting and issuing MAIL FROM, RCPT TO
+    commands
+    <OL>
+    <LI>smtpHost
+    <LI>smtpStatus
+    </OL>
+
+<LI><B>syslog</B> - Monitors remote syslog files via SNMP syslogTable. This is for remote
+    centralized syslog servers, should have ossmon agent running.
+    <OL>
+    <LI>syslogMsg
+    </OL>
+
+<LI><B>exec</B> - Monitors by executing an external script. All output is put
+    in the monitor's table.
+    <OL>
+    <LI>execLine
+    </OL>
+
+<LI><B>file</B> - Monitors local files by matching regex filters. Only matched lines
+    will be reported.
+    <OL>
+    <LI>fileLine
+    </OL>
+
+<LI><B>prTable</B> - Monitors processes via SNMP prTable, requires Net-SNMP on the remoted end.
+    <OL>
+    <LI>prIndex
+    <LI>prNames
+    <LI>prMin
+    <LI>prMax
+    <LI>prCount
+    <LI>prErrorFlag - 1 if process is not running
+    <LI>prErrMessage
+    <LI>prErrFix
+    <LI>prErrFixCmd
+    </OL>
+
+<LI><B>dskTable</B> - Monirtors disks via SNMP dskTable, requires Net-SNMP on the remoted end.
+    <OL>
+    <LI>dskIndex
+    <LI>dskPath
+    <LI>dskDevice
+    <LI>dskMinimum
+    <LI>dskMinPercent
+    <LI>dskTotal
+    <LI>dskAvail
+    <LI>dskUsed
+    <LI>dskPercent
+    <LI>dskPercentNode
+    <LI>dskErrorFlag
+    <LI>dskErrorM
+    </OL>
+
+<LI><B>laTable</B>- Monitors server load via SNMP laTable, requires Net-SNMP on the remoted end.
+    <OL>
+    <LI>laIndex
+    <LI>laNames
+    <LI>laLoad
+    <LI>laConfig
+    <LI>laLoadInt
+    <LI>laLoadFloat
+    <LI>laErrorFlag
+    <LI>laErrMessage
+    </OL>
+<LI><B>hrStorageTable</B> - Monitors storage devifes via SNMP HOST-RESOURCES-MIB.
+    <OL>
+    <LI>hrStorageIndex
+    <LI>hrStorageType
+    <LI>hrStorageDescr
+    <LI>hrStorageAllocationUnits
+    <LI>hrStorageSize
+    <LI>hrStorageUsed
+    </OL>
+</UL>
+</PRE>
+<P>
+
+<DT><A NAME=t49><H4>4.9. Action Rules</H4></A>
+
+Action rules are special script executed by OSSMON in different situation and are very usefull
+for customizing default OSSMON behaiviour. There are several stages when action script can be invoked:
+BEFORE, AFTER, FINAL.<P>
+<UL>
+<LI>BEFORE means that the script should be called before any alert rules are executed, just after OSSMON gathered
+all data from the device.
+<LI>AFTER means that the script should be executed just after alert rules
+<LI>FINAL means that the script should be executed after all alert processing is done for the device and
+after FINAL alert rules, i.e. this is the last piece of action for any particualr device in the current poll session.
+</UL>
+<P>
+In order to call any action script, OSSMON verifies matching condition for each monitor, similar to alert rules condition and if matched then
+action script is executed. The script is just Tcl with devined $name vairable which refers to current
+monitor object, so monitor can be accessed using ossmon::monitor $name call.<P>
+In such action scrips it is possible to update monitor variables, change titles, even update database directly. There are special monitor calls to handle alerts:<P>
+<UL>
+<LI>ossmon::monitor $name -alert:keepalive - it will update every active alert for the current device
+    so OSSMON will not close it if no new alerts generated during ossmon:alert:interval:active period. This may be usefull in cases when network personnel handles
+    alert closing manually.
+<LI>ossmon::monitor $name -alert:close - this call will immediately close all active alerts for the current device
+</UL>
+
+</DL>
+
+<OL>
+
+<OL>
+
+<LI><A NAME=t5><H3>Configuring OSSMON</H3></A>
+<DL>
+<DT><A NAME=t51><H4>5.1. Config parameters</H4></A>
+OSSMON behaviour can be modified significantly by using configuration parameters:
+global, device specific and monitor specific.
+After OSSMON installation, global parameters can be added/modified using OSSWEB Config
+web page under Setup/Config menu. Every device has its important parameters on the Details
+page and the rest of paremetrs are on the Properties tab. Monitor configuration is the same as
+for devices: main paremeters are on the Details page and the rest are under Properties tab.<P>
+
+<UL>
+
+<LI><A NAME=ossmon:snmp:community><B>snmp:community</B></A> - <SPAN CLASS=pt>SNMP Community</SPAN><BR>
+    SNMP community for read access<BR>
+    Related monitors: snmp walk table var ifTable prTable dskTable laTable syslog<P>
+
+<LI><A NAME=ossmon:snmp:writecommunity><B>snmp:writecommunity</B></A> - <SPAN CLASS=pt>SNMP Write Community</SPAN><BR>
+    SNMP community for write access<BR>
+    Related monitors: snmp walk table var ifTable prTable dskTable laTable syslog<P>
+
+<LI><A NAME=ossmon:snmp:version><B>snmp:version</B></A> - <SPAN CLASS=pt>SNMP Version</SPAN><BR>
+    SNMP protocol version: 1 or 2<BR>
+    Related monitors: snmp walk table var ifTable prTable dskTable laTable syslog<P>
+
+<LI><A NAME=ossmon:snmp:retries><B>snmp:retries</B></A> - <SPAN CLASS=pt>SNMP Retries</SPAN><BR>
+    SNMP request retries, how many times to send SNMP packets if no response received
+    during configured timeout<BR>
+    Related monitors: snmp walk table var ifTable prTable dskTable laTable syslog<P>
+
+<LI><A NAME=ossmon:snmp:bulk><B>snmp:bulk</B></A> - <SPAN CLASS=pt>SNMP Bulk Amount</SPAN><BR>
+    Number of SNMP variables in one UDP packet for bulk replies<BR>
+    Related monitors: snmp walk table var ifTable prTable dskTable laTable syslog<P>
+
+<LI><A NAME=ossmon:snmp:port><B>snmp:port</B></A> - <SPAN CLASS=pt>SNMP Port</SPAN><BR>
+    Port to be used for SNMP requests<BR>
+    Default: 161<BR>
+    Related monitors: snmp walk table var ifTable prTable dskTable laTable syslog<P>
+
+<LI><A NAME=ossmon:snmp:timeout><B>snmp:timeout</B></A> - <SPAN CLASS=pt>SNMP Timeout</SPAN><BR>
+    Timeout for SNMP requests in seconds<BR>
+    Related monitors: snmp walk table var ifTable prTable dskTable laTable syslog<P>
+
+
+<LI><A NAME=ossmon:snmp:fix:name><B>snmp:fix:name</B></A> - <SPAN CLASS=pt>SNMP Fix Process</SPAN><BR>
+    Name or index from prTable of the process to be fixed on error.To be used in action rules
+    by calling <B>ossmon::monitor::fix $name</B> when needed. If index is given, corresponding
+    prErrFix.index will be set, if name is given fixProcess variable will be set. SNMP agent
+    on destination machine should be Net-SNMP with ossmon to support this feature.<BR>
+    Related monitors: snmp prTable<P>
+
+<LI><A NAME=ossmon:hrProcessList><B>ossmon:hrProcessList</B></A> - <SPAN CLASS=pt>Process List</SPAN><BR>
+    List of processes to be monitored by alert rule for Host Resources MIB. This is regexp with process names, the rule<B>R
+    will be executed at the last phase when the whole hrSWRunTable is retrieved.
+    Related monitors: table(hrSWRunTable)<P>
+
+<LI><A NAME=ossmon:snmp:interface:speed><B>snmp:interface:speed</B></A> - <SPAN CLASS=pt>Interface Speed</SPAN><BR>
+    Speed of the interface in case of wrong speed or broken SNMP implementation<BR>
+    Related monitors: ifTable<P>
+
+<LI><A NAME=ossmon:snmp:interface:index><B>snmp:interface:index</B></A> - <SPAN CLASS=pt>Interface Index</SPAN><BR>
+    List of interface indexes for retrieval. If not specified all interfaces will be retrieved.<BR>
+    Related monitors: ifTable<P>
+
+<LI><A NAME=ossmon:snmp:interface:packets><B>snmp:interface:packets</B></A> - <SPAN CLASS=pt>Interface Unicats Packets</SPAN><BR>
+    By default, interface monitor will retrieve ifInUcastPkts and ifOutUcastPkts and
+    calculate packets per second rate. Some SNMP agents do not provie those variable in the ifTable
+    so, setting this property to No will disable retrieving above variables.<BR>
+    Related monitors: ifTable<P>
+
+<LI><A NAME=ossmon:chart:title><B>ossmon:chart:title</B></A> - <SPAN CLASS=pt>Monitor Chart Title</SPAN><BR>
+    Title for statistics charts in case custom title is required, mostly for generic collection
+    charts<BR>
+
+<LI><A NAME=ossmon:console:width><B>ossmon:console:width</B></A> - <SPAN CLASS=pt>Console Width</SPAN><BR>
+    Number of devices per row on the Web console<P>
+
+<LI><A NAME=ossmon:console:x><B>ossmon:console:x</B></A> - <SPAN CLASS=pt>Maps Left Corner</SPAN><BR>
+    Top Left X coordinate of the maps image<P>
+
+<LI><A NAME=ossmon:console:y><B>ossmon:console:y</B></A> - <SPAN CLASS=pt>Maps Top Corner</SPAN><BR>
+    Top Left Y coordinate of the maps image<P>
+
+<LI><A NAME=ossmon:console:icons><B>ossmon:console:icons</B></A> - <SPAN CLASS=pt>Console Width</SPAN><BR>
+    If true show little icons in the device squares on the console maps<P>
+
+<LI><A NAME=ossmon:charts:interval><B>ossmon:charts:interval</B></A> - <SPAN CLASS=pt>Console Charts Interval</SPAN><BR>
+    Interval between generating realtime charts for the Web console<P>
+
+<LI><A NAME=ossmon:console:alerts><B>ossmon:console:alerts</B></A> - <SPAN CLASS=pt>Console Alerts</SPAN><BR>
+    Number of recent alerts to show on the Web console<P>
+
+<LI><A NAME=ossmon:console:refresh><B>ossmon:console:refresh</B></A> - <SPAN CLASS=pt>Console Refresh</SPAN><BR>
+    Number of seconds between the Web console status refresh<P>
+
+<LI><A NAME=ossmon:filter><B>ossmon:filter</B></A> - <SPAN CLASS=pt>Filter</SPAN><BR>
+    In case of ifTable monitor, use only matched interfaces, regexp by ifDescr. Can be used to
+    split all interfaces into separate monitors. Interface table will be retrieved only
+    once regardless of how many monitors will be used. For mailbox monitor it matches
+    To,From or Subject headers, in case of File monitor only matched lines will be
+    included into monitor.<BR>
+    Related monitors: ifTable mailbox file<P>
+
+<LI><A NAME=ossmon:filter:ignore><B>ossmon:filter:ignore</B></A> - <SPAN CLASS=pt>Ignore Filter</SPAN><BR>
+    Used by monitor to ignore some lines from the output, this filter is processed
+    before ossmon:filter, i.e., first lines checked for ignor than for include.<BR>
+    Related monitors: exec file syslog<P>
+
+<LI><A NAME=ossmon:ping><B>ossmon:ping</B></A> - <SPAN CLASS=pt>Ping Before Poll</SPAN><BR>
+    By default, before doing polling OSSMON issue several ICMP requests to the remote host to
+    verify network connectivity. If host is not reachable, noConnectivity exception will be
+    raised. In some cases, when network configuration disallow ICMP packets, this option
+    should be set to No.
+
+<LI><A NAME=ossmon:columns><B>ossmon:columns</B></A> - <SPAN CLASS=pt>Monitor Columns</SPAN><BR>
+    List of fields representing a row in the monitor.
+    Usually monitors have predefined structure but for SNMP
+    table/group types it is possible to define which
+    variable to fetch instead of retriving the whole subtree<BR>
+    Related monitors: table group<P>
+
+<LI><A NAME=ossmon:stop><B>ossmon:stop</B></A> - <SPAN CLASS=pt>Stop OSSMON polling</SPAN><BR>
+    Stop polling devices<P>
+
+<LI><A NAME=ossmon:eval><B>ossmon:eval</B></A> - <SPAN CLASS=pt>Monitor Script</SPAN><BR>
+    Script to be run for every row of the monitor. Same rules apply as for action rule scripts.
+    this script will be run for every monitor after all alert/action rules.<P>
+
+<LI><A NAME=ossmon:stop:noConnectivity><B>ossmon:stop:noConnectivity</B></A> - <SPAN CLASS=pt>Stop on noConnectivity</SPAN><BR>
+    Stop polling subdevices on noConnectivity alert. If set no No, OSSMON will continue
+    polling subdevices and report noConnectivity on all devices. If set to Yes and parent device
+    no reachable, OSSMON will not poll subdevices because if parent is down no point polling
+    device beyond it or devices that depend on it.<P>
+
+<LI><A NAME=ossmon:debug><B>ossmon:debug</B></A> - <SPAN CLASS=pt>Debug Level</SPAN><BR>
+    Enables debug logging<P>
+
+<LI><A NAME=ossmon:user:id><B>ossmon:user:id</B></A> - <SPAN CLASS=pt>User ID</SPAN><BR>
+    ID of the user from which OSSMON will generate events<P>
+
+<LI><A NAME=ossmon:thread:threshold><B>ossmon:monitor:threshold</B></A> - <SPAN CLASS=pt>Polling Monitor Threshold</SPAN><BR>
+    For each device OSSMON sequentially polls all monitors one by one. This parameter tells OSSMON to
+    spawn separate thread to poll monitors if number of monitors exceeds specified value.
+    For example if for any particular device total number of all monitors including monitors belonging
+    to subdevices is 10, then 3 threads will be created to poll 10 monitors simultaneously<BR>
+    Default: 3<P>
+
+<LI><A NAME=ossmon:admin:email><B>ossmon:admin:email</B></A> - <SPAN CLASS=pt>Admin Email</SPAN><BR>
+    Email where to send administrative emails like reporting or system alerts<P>
+
+<LI><A NAME=ossmon:url><B>ossmon:url</B></A> - <SPAN CLASS=pt>Details URL</SPAN><BR>
+    URL to access OSSMON monitor details page, will be included into notification and reports<P>
+
+<LI><A NAME=ossmon:thread:max><B>ossmon:maxthreads</B></A> - <SPAN CLASS=pt>Max Polling Threads</SPAN><BR>
+    Max number of polling threads, all monitors will be queue and only this number of threads
+    will be spawn to perform polling.<BR>
+    Default: 16<P>
+
+<LI><A NAME=ossmon:poll:interval><B>ossmon:poll:interval</B></A> - <SPAN CLASS=pt>Polling Interval</SPAN><BR>
+    Interval between polling in seconds<BR>
+    Default: 5 minutes<P>
+
+<LI><A NAME=ossmon:poll:skip:period><B>ossmon:poll:skip:period</B></A> - <SPAN CLASS=pt>Poll Skip Period</SPAN><BR>
+    Defines periods when not to poll the device,<BR>
+    format: "datetime;duration" ...<BR>
+    where datetime can be any {HH:MI} or {MM/DD/YYYY HH:MI} or {Sun|Mon...|Sat HH:MI}<BR>
+    duration is number of seconds or NNh for hours or NNm for minutes<BR>
+    <DIV CLASS=ex>Example: "12:00;3600" "Sun 1:0;2h" {2004/01/01 0:0;3600}</DIV><P>
+
+<LI><A NAME=ossmon:collect><B>ossmon:collect</B></A> - <SPAN CLASS=pt>Collect Statistics</SPAN><BR>
+    Collect statistics for a monitor in order to produce statistical/performance charts<BR>
+    Default: Yes<P>
+
+<LI><A NAME=ossmon:collect:chart:title><B>ossmon:collect:chart:title</B></A> - <SPAN CLASS=pt>Collect chart Title</SPAN><BR>
+    Title for custom monitor specific charts<P>
+
+<LI><A NAME=ossmon:collect:interval><B>ossmon:collect:interval</B></A> - <SPAN CLASS=pt>Collect Interval</SPAN><BR>
+    Interval between saving collected statistics in seconds. For example if set
+    to 1800, data will be saved every 30 minutes.
+    If not specified polling interval will be used<P>
+
+<LI><A NAME=ossmon:collect:columns><B>ossmon:collect:columns</B></A> - <SPAN CLASS=pt>Collect Columns</SPAN><BR>
+    Collect statistics for specific variables in format name value.... Can be used to
+    collect generic or not pre-defined statistics. First column should be name and second
+    should be some kind of number, integer or float to be displayed correctly on the charts.
+    <DIV CLASS=ex>Example: prNames prCount httpHost httpTime</DIV><P>
+
+<LI><A NAME=ossmon:collect:history:time><B>ossmon:collect:history:time</B></A> - <SPAN CLASS=pt>Collect History</SPAN><BR>
+    For how long to keep collected statistics, all data older than speciffied will be
+    removed from the database.<BR>
+    format: 2 days or 10 hours or 1 week or 2 months<P>
+
+<LI><A NAME=ossmon:alert:interval><B>ossmon:alert:interval</B></A> - <SPAN CLASS=pt>Alert Interval</SPAN><BR>
+    Minimum interval between alerts in seconds. This is one of the main parameters
+    explained in the begining of this manual.<P>
+
+<LI><A NAME=ossmon:alert:interval:active><B>ossmon:alert:interval:active</B></A> - <SPAN CLASS=pt>Alert Interval Active</SPAN><BR>
+    Inactivity period after which active alert becomes pending.
+    Once alert has been created and the problem has been fixed, monitor stops updating
+    alert records, it becomes inactive or pending. This parameters specifies for how long
+    OSSMON keeps active alerts in the database before changing them into Pending in case the problem
+    will reappear. If the same problem for the same device occurs again OSSMON will pick up
+    existing active alert and reuse it.<BR>
+    Default: 30 minutes<P>
+
+<LI><A NAME=ossmon:alert:interval:pending><B>ossmon:alert:interval:pending</B></A> - <SPAN CLASS=pt>Alert Interval Pending</SPAN><BR>
+    Inactivity period after which pending alert is closed.
+    Once alert has been converted into pending, it stays pending for some time. It is not active anymore,
+    does not produce any alerts and does not show in the active list, but it stays quiet as pending
+    in case the problem will reappear. If the same problem for the same device occurs again OSSMON
+    will pick up existing pending alert and reopen it.<BR>
+    Default: 30 minutes<P>
+
+<LI><A NAME=ossmon:alert:interval:period><B>ossmon:alert:interval:period</B></A> - <SPAN CLASS=pt>Alert Interval Period</SPAN><BR>
+    Defines alert interval for any given period of time,<BR>
+    format: "datetime;duration;interval" ...<BR>
+    where datetime can be any {HH:MI} or {MM/DD/YYYY HH:MI} or {Sun|Mon...|Sat HH:MI}<BR>
+    duration is number of seconds or NNh for hours or NNm for minutes<BR>
+    <DIV CLASS=ex>Example: "12:00;8h;7200" {Sat 0:0;24h;1d} {2004/01/01 0:0;24h;5h}</DIV><BR>
+    which tells that alerts happened between midnight and 8am send alerts every
+    2 hours, alerts happened during weekend should be sent every 24 hours and
+    on Jan 1 2004 send alerts every 5 hours<P>
+
+<LI><A NAME=ossmon:alert:threshold><B>ossmon:alert:threshold</B></A> - <SPAN CLASS=pt>Alert Threshold</SPAN><BR>
+    This is second important parameter which defines how OSSMON reacts on alerts.
+    It specifies how many alert events should occur before sending notification.
+    For example, router is located on remote site and network is up and down on that
+    line. Monitoring such device becomes very inconvenient because it is hard to
+    distinguish device failure from temporary line failure. So setting threshold to
+    3 means that only when we polled the router 3 times and all 3 times we did not receive
+    response from the router OSSMON should send alert notification.<P>
+
+<LI><A NAME=ossmon:alert:threshold:period><B>ossmon:alert:threshold:period</B></A> - <SPAN CLASS=pt>Alert Threshold Period</SPAN><BR>
+    Defines alert threshold for any given period of time,<BR>
+    format: {datetime;duration;threshold} ...<BR>
+    where datetime can be any {HH:MI} or {MM/DD/YYYY HH:MI} or {Sun|Mon...|Sat HH:MI}<BR>
+    duration is number of seconds or NNh for hours or NNm for minutes<BR>
+    <DIV CLASS=ex>Example: "12:00;8h;2" {Sat 0:0;24h;3} {2004/01/01 0:0;24h;3}</DIV><P>
+
+<LI><A NAME=ossmon:alert:log:dump><B>ossmon:alert:log:dump</B></A> - <SPAN CLASS=pt>Alert Log Dump</SPAN><BR>
+    Store monitor attributes in the alert log, should be enabled for debugging only<P>
+
+<LI><A NAME=ossmon:alert:email><B>ossmon:alert:email</B> - <SPAN CLASS=pt>Alert Email</SPAN><BR>
+    Email address for alert notifications<P>
+
+<LI><A NAME=ossmon:alert:exec><B>ossmon:alert:exec</B> - <SPAN CLASS=pt>Alert Exec Program</SPAN><BR>
+    External program to be executed on alert.It will receive generated from the template
+    alert text on its standard input<P>
+
+<LI><A NAME=ossmon:alert:exec:closed><B>ossmon:alert:exec:closed</B> - <SPAN CLASS=pt>Alert Exec Close Program</SPAN><BR>
+    External program to be executed when alert is about to be closed. It can be possibly usefull to reset alert condition
+    or to send a signal to external facility about alert closing<P>
+
+<LI><A NAME=ossmon:alert:email:period><B>ossmon:alert:email:period</B></A> - <SPAN CLASS=pt>Alert Email Period</SPAN><BR>
+    Email where to send alert for any given period of time,<BR>
+    format: "datetime;duration;email" ...<BR>
+    where datetime can be any {HH:MI} or {MM/DD/YYYY HH:MI} or {Sun|Mon...|Sat HH:MI}<BR>
+    duration is number of seconds or NNh for hours or NNm for minutes<BR>
+    <DIV CLASS=ex>Example: "12:00;8h;shift1@company.com" {Sat 0:0;24h;oncall@company.com} {2004/01/01 0:0;24h;noreply@company.com}</DIV><P>
+
+<LI><A NAME=ossmon:alert:email:cc><B>ossmon:alert:email:cc</B></A> - <SPAN CLASS=pt>Alert Email CC:</SPAN><BR>
+    Copy alert notification to specified email address<P>
+
+<LI><A NAME=ossmon:alert:problem:project><B>ossmon:alert:problem:project</B></A> - <SPAN CLASS=pt>Alert Problem Project</SPAN><BR>
+    Problem project id to be used for OSSMON generated problems, if alert rules are going to
+    generate problem alert notifications, project id should be specified.<P>
+
+<LI><A NAME=ossmon:alert:problem:type><B>ossmon:alert:problem:type</B></A> - <SPAN CLASS=pt>Alert Problem Type</SPAN><BR>
+    Type of the problem/task record to be created upon alert. Default is problem.<P>
+
+<LI><A NAME=ossmon:alert:problem:status><B>ossmon:alert:problem:status</B></A> - <SPAN CLASS=pt>Alert Problem Status</SPAN><BR>
+    Status of the problem/task record on creation or when new note is submitted. Default is open.<P>
+
+<LI><A NAME=ossmon:alert:problem:quiet><B>ossmon:alert:problem:quiet</B></A> - <SPAN CLASS=pt>Alert Problem Quiet</SPAN><BR>
+    By default, when new note is submitted to the existing problem/task, an email notifiction is sent to all
+    involved in this problem/task. If quiet flag is set to Yes, then no email will be sent.<P>
+
+<LI><A NAME=ossmon:alert:problem:closed:skip><B>ossmon:alert:problem:skip:closed</B></A> - <SPAN CLASS=pt>Alert Problem Skip On close</SPAN><BR>
+    By default, when alert gets closed, special handler is called which perform some actions for each
+    problem/task associated with the alert, usually it writes final note and closes the problem/task. If this flag is set to True, then no such action will be
+    performed and problem/task will remain active after OSSMON alert got closed. this is usuafull when
+    created problem/task is treated as trouble ticket and is handled by personnal separately.<P>
+
+<LI><A NAME=ossmon:alert:problem:notes><B>ossmon:alert:problem:notes</B></A> - <SPAN CLASS=pt>Alert Problem Notes On Alert</SPAN><BR>
+    This parameter determines whether new problem/task created on alert or OSSMON will try to
+    locate existing problem/task and just add new notes to it.
+    Default: True, just add notes to the existing problem/task<P>
+
+<LI><A NAME=ossmon:alert:problem:closed:notes><B>ossmon:alert:problem:notes:closed</B></A> - <SPAN CLASS=pt>Alert Problem Notes On Close</SPAN><BR>
+    Message to be used for closed problems/tasks, this will be the final note before problem/task will be closed<BR>
+    Default: Problem resolved, automated OSSMON message<P>
+
+<LI><A NAME=ossmon:alert:problem:closed:status><B>ossmon:alert:problem:status:closed</B></A> - <SPAN CLASS=pt>Alert Problem Status On close</SPAN><BR>
+    Status to be used for problem when alert is closed, by default problem/task gets closed as well, but in some cases it may be
+    convenient to turn the problem into different state for further processing, like putting them on hold for review by manager<BR>
+    Default: completed<P>
+
+<LI><A NAME=ossmon:syslog:severity><B>ossmon:syslog:severity</B> - <SPAN CLASS=pt>Syslog Severity</SPAN><BR>
+    Severity to be used for syslog alerts
+
+<LI><A NAME=ossmon:syslog:facility><B>ossmon:syslog:facility</B> - <SPAN CLASS=pt>Syslog Facility</SPAN><BR>
+    Facility to be used for syslog alerts
+
+<LI><A NAME=ossmon:syslog:host><B>ossmon:syslog:host</B> - <SPAN CLASS=pt>Syslog Host or Device</SPAN><BR>
+    Device like /dev/log or hostname of the remote syslog server
+
+<LI><A NAME=ossmon:smtp:rcpt_to><B>smtp:rcpt_to</B></A> - <SPAN CLASS=pt>SMTP Rcpt To</SPAN><BR>
+    SMTP Rcpt To address used by SMTP monitor<BR>
+    Related monitors: smtp<P>
+
+<LI><A NAME=ossmon:smtp:mail_from><B>smtp:mail_from</B></A> - <SPAN CLASS=pt>SMTP Mail From</SPAN><BR>
+    SMTP Mail From address used by SMTP monitor<BR>
+    Related monitors: smtp<P>
+
+<LI><A NAME=ossmon:smtp:port><B>smtp:port</B></A> - <SPAN CLASS=pt>SMTP Port</SPAN><BR>
+    Port to be used for SMTP requests<BR>
+    Default: 25<BR>
+    Related monitors: smtp<P>
+
+<LI><A NAME=ossmon:smtp:timeout><B>smtp:timeout</B></A> - <SPAN CLASS=pt>SMTP Timeout</SPAN><BR>
+    Timeout to be used for SMTP requests<BR>
+    Related monitors: smtp<P>
+
+<LI><A NAME=ossmon:http:url><B>http:url</B></A> - <SPAN CLASS=pt>HTTP Url</SPAN><BR>
+    Url for HTTP monitoring<BR>
+    Default: /<BR>
+    Related monitors: http<P>
+
+<LI><A NAME=ossmon:http:port><B>http:port</B></A> - <SPAN CLASS=pt>HTTP Port</SPAN><BR>
+    Port to be used for HTTP requests, default is 80<BR>
+    Default: 80<BR>
+    Related monitors: http<P>
+
+<LI><A NAME=ossmon:http:timeout><B>http:timeout</B></A> - <SPAN CLASS=pt>HTTP Timeout</SPAN><BR>
+    Timeout to be used for HTTP requests<BR>
+    Related monitors: http<P>
+
+<LI><A NAME=ossmon:auth:user><B>auth:user</B></A> - <SPAN CLASS=pt>Auth Username</SPAN><BR>
+    Username to be used for authentication<BR>
+    Related monitors: imap pop3<P>
+
+<LI><A NAME=ossmon:auth:password><B>auth:password</B></A> - <SPAN CLASS=pt>Auth Password</SPAN><BR>
+    Password to be used for authentication<BR>
+    Related monitors: imap pop3<P>
+
+<LI><A NAME=ossmon:auth:secretkey><B>auth:secretkey</B></A> - <SPAN CLASS=pt>Auth Secret Key</SPAN><BR>
+    Secret Key to be used for authentication<BR>
+    Related monitors: radius<P>
+
+<LI><A NAME=ossmon:pop3:port><B>pop3:port</B></A> - <SPAN CLASS=pt>POP3 Port</SPAN><BR>
+    Port to be used for POP3 requests<BR>
+    Default: 110<BR>
+    Related monitors: pop3<P>
+
+<LI><A NAME=ossmon:pop3:timeout><B>pop3:timeout</B></A> - <SPAN CLASS=pt>POP3 Timeout</SPAN><BR>
+    Timeout to be used for POP3 requests<BR>
+    Related monitors: pop3<P>
+
+<LI><A NAME=ossmon:imap:port><B>imap:port</B></A> - <SPAN CLASS=pt>IMAP Port</SPAN><BR>
+    Port to be used for IMAP requests<BR>
+    Default: 143<BR>
+    Related monitors: imap<P>
+
+<LI><A NAME=ossmon:imap:timeout><B>imap:timeout</B></A> - <SPAN CLASS=pt>IMAP Timeout</SPAN><BR>
+    Timeout to be used for IMAP requests<BR>
+    Related monitors: imap<P>
+
+<LI><A NAME=ossmon:ping:count><B>ping:count</B></A> - <SPAN CLASS=pt>PING Count</SPAN><BR>
+    Number of ICMP requests to send<BR>
+    Related monitors: ping<P>
+
+<LI><A NAME=ossmon:ping:timeout><B>ping:timeout</B></A> - <SPAN CLASS=pt>PING Timeout</SPAN><BR>
+    Timeout for ICMP requests in seconds<BR>
+    Related monitors: ping<P>
+
+<LI><A NAME=ossmon:ping:size><B>ping:size</B></A> - <SPAN CLASS=pt>PING Size</SPAN><BR>
+    Size of the ICMP request packet<BR>
+    Related monitors: ping<P>
+
+<LI><A NAME=ossmon:dns:hosts><B>dns:hosts</B></A> - <SPAN CLASS=pt>DNS Hosts</SPAN><BR>
+    List of hosts to be used for monitoring<BR>
+    Related monitors: dns<P>
+
+<LI><A NAME=ossmon:dns:timeout><B>dns:timeout</B></A> - <SPAN CLASS=pt>DNS Timeout</SPAN><BR>
+    Timeout for DNS requests in seconds<BR>
+    Related monitors: dns<P>
+
+<LI><A NAME=ossmon:radius:port><B>radius:port</B></A> - <SPAN CLASS=pt>RADIUS Port</SPAN><BR>
+    Port to be used for RADIUS requests<BR>
+    Default: 1842<BR>
+    Related monitors: radius<P>
+
+<LI><A NAME=ossmon:radius:timeout><B>radius:timeout</B></A> - <SPAN CLASS=pt>RADIUS Timeout</SPAN><BR>
+    Timeout to be used for RADIUS requests<BR>
+    Related monitors: radius<P>
+
+<LI><A NAME=ossmon:radius:retries><B>radius:retries</B></A> - <SPAN CLASS=pt>RADIUS Retry</SPAN><BR>
+    Number of RADIUS request retries<BR>
+    Related monitors: radius<P>
+
+<LI><A NAME=ossmon:tcp:data><B>tcp:data</B></A> - <SPAN CLASS=pt>TCP Request</SPAN><BR>
+    Request data for TCP monitoring. This will be sent to open TCP socket. If newline is required,
+    use \r or \n in the request.<BR>
+    Example: GET / HTTP/1.0\r\n\r\n
+    Related monitors: tcp<P>
+
+<LI><A NAME=ossmon:tcp:port><B>tcp:port</B></A> - <SPAN CLASS=pt>TCP Port</SPAN><BR>
+    Port to be used for TCP requests<BR>
+    Related monitors: tcp<P>
+
+<LI><A NAME=ossmon:tcp:timeout><B>tcp:timeout</B></A> - <SPAN CLASS=pt>TCP Timeout</SPAN><BR>
+    Timeout to be used for TCP requests<BR>
+    Related monitors: tcp<P>
+
+<LI><A NAME=ossmon:tcp:size><B>tcp:size</B></A> - <SPAN CLASS=pt>TCP Size</SPAN><BR>
+    Timeout to be used for TCP requests<BR>
+    Related monitors: tcp<P>
+
+<LI><A NAME=ossmon:udp:data><B>udp:data</B></A> - <SPAN CLASS=pt>UDP Request</SPAN><BR>
+    Request data for UDP monitoring. This will be sent to open UDP socket. If newline is required,
+    use \r or \n in the request.<BR>
+    Example: GET / HTTP/1.0\r\n\r\n
+    Related monitors: udp<P>
+
+<LI><A NAME=ossmon:udp:port><B>udp:port</B></A> - <SPAN CLASS=pt>UDP Port</SPAN><BR>
+    Port to be used for UDP requests<BR>
+    Related monitors: udp<P>
+
+<LI><A NAME=ossmon:udp:timeout><B>udp:timeout</B></A> - <SPAN CLASS=pt>UDP Timeout</SPAN><BR>
+    Timeout to be used for UDP requests<BR>
+    Related monitors: udp<P>
+
+<LI><A NAME=ossmon:udp:retries><B>udp:retries</B></A> - <SPAN CLASS=pt>UDP Retries</SPAN><BR>
+    Number of times to re-send UDP packet on timeout<BR>
+    Related monitors: udp<P>
+
+<LI><A NAME=ossmon:ftp:port><B>ftp:port</B></A> - <SPAN CLASS=pt>FTP Port</SPAN><BR>
+    Port to be used for FTP requests<BR>
+    Default: 21<BR>
+    Related monitors:ftp<P>
+
+<LI><A NAME=ossmon:ftp:timeout><B>ftp:timeout</B></A> - <SPAN CLASS=pt>FTP Timeout</SPAN><BR>
+    Timeout to be used for FTP requests<BR>
+    Related monitors: ftp<P>
+
+<LI><A NAME=ossmon:trap:host><B>trap:host</B></A> - <SPAN CLASS=pt>SNMP Trap Host</SPAN><BR>
+    Host where to send SNMP traps on alerts, when alert rule configured to send SNMP trap,
+    this parameter should be set, otherwise alert rule will be ignored<BR>
+
+<LI><A NAME=ossmon:trap:port><B>trap:port</B></A> - <SPAN CLASS=pt>SNMP Trap Port</SPAN><BR>
+    Poirt for SNMP traps<BR>
+    Default: 162<P>
+
+<LI><A NAME=ossmon:trap:oid><B>trap:oid</B></A> - <SPAN CLASS=pt>SNMP Trap ID</SPAN><BR>
+    Trap ID, which is SNMP OID to be used when sending alerts<BR>
+    Default: 1.3.6.1.4.1.19804<P>
+
+<LI><A NAME=ossmon:trap:enterprise><B>trap:enterprise</B></A> - <SPAN CLASS=pt>SNMP Trap Enterprise</SPAN><BR>
+    Enterprise ID to be used when sending SNMP traps<BR>
+    Default: 1.3.6.1.4.1.19804<P>
+
+<LI><A NAME=ossmon:trap:var><B>trap:var</B></A> - <SPAN CLASS=pt>SNMP Trap Var</SPAN><BR>
+    Trap alert will send alert subject as trap variable, this parameter defines SNMP
+    OID for this variable<BR>
+    Default: 1.3.6.1.4.1.19804<P>
+
+</UL>
+
+<DT><A NAME=t52><H4>5.2. Agent configuration</H4></A>
+In case you are going to use ossmon agent the only configuration you need to support
+is ossmon.conf and snmpd.conf files. They are installed in /usr/local/ns/conf or
+other location in case of stock <A HREF=http://net-snmp.sourceforge.net>Net-SNMP</A>
+installation. OSSMON includes small shell script
+which can be used to configure and compile Net-SNMP and install it in /usr/local/ns
+instead of spreading binaries and other files across the filesystem. One benefit putting
+everything under /usr/local/ns that it can be easily installed on other computer.
+No other files and directories will be needed to make remote Linux/Unix box act as SNMP agent,
+just copy /usr/local/ns and make adjustments in snmpd.conf/ossmon.conf,
+usually <B>proc</B> and <B>fix-proc</B> directives.<P>
+Basically ossmon.tcl is an extension script for <A HREF=http://net-snmp.sourceforge.net>Net-SNMP</A>.
+In the snmpd.conf there are special <B>exec</B> directives which tell snmpd
+agent to call configured script when some particular MIB variables are queried or set.
+Please refer to <A HREF=http://net-snmp.sourceforge.net/#Documentation>Net-SNMP Documentation</A>
+for more information about configuring snmp agent. OSSMON just adds some additional
+directives to support OSSMON-MIB variables.<P>
+
+<PRE STYLE="background-color: #EEEEEE">
+exec .1.3.6.1.4.1.19804.1.2 psTable /usr/local/ns/bin/ossmon.tcl psTable
+exec .1.3.6.1.4.1.19804.1.3 netstatTable /usr/local/ns/bin/ossmon.tcl netstatTable
+exec .1.3.6.1.4.1.19804.1.4 tailTable /usr/local/ns/bin/ossmon.tcl tailTable
+exec .1.3.6.1.4.1.19804.1.5 syslogTable /usr/local/ns/bin/ossmon.tcl syslogTable
+exec .1.3.6.1.4.1.19804.1.6 pingTable /usr/local/ns/bin/ossmon.tcl pingTable
+
+pass .1.3.6.1.4.1.19804.2 /usr/local/ns/bin/ossmon.tcl killProcess
+pass .1.3.6.1.4.1.19804.3 /usr/local/ns/bin/ossmon.tcl event
+
+proc /usr/local/sbin/sshd 0 0
+procfix /usr/local/sbin/sshd /usr/local/ns/bin/ossmon.tcl fix ssh
+
+proc /usr/local/ns/bin/nsd 0 0
+procfix /usr/local/ns/bin/nsd /usr/local/ns/bin/ossmon.tcl fix nsd
+
+proc /usr/local/pgsql/bin/postmaster 0 0
+procfix /usr/local/pgsql/bin/postmaster /usr/local/ns/bin/ossmon.tcl fix postmaster
+</PRE>
+<P>
+Now when using snmpwalk we request netstatTable we will receive output of netstat utility.
+<P>
+<PRE STYLE="background-color: #EEEEEE">
+bash2.05# snmpwalk 127.0.01 public netstatTable
+enterprises.ossmon.exec.netstatTable.1.1 = 1
+enterprises.ossmon.exec.netstatTable.2.1 = "netstat"
+enterprises.ossmon.exec.netstatTable.3.1 = "/usr/local/ns/bin/ossmon.tcl netstatTable"
+enterprises.ossmon.exec.netstatTable.100.1 = 0
+enterprises.ossmon.exec.netstatTable.101.1 = "Active Internet connections (w/o servers)"
+enterprises.ossmon.exec.netstatTable.101.2 = "Proto Recv-Q Send-Q Local Address           Foreign Address         State      "
+enterprises.ossmon.exec.netstatTable.101.3 = "tcp        0      0 192.168.28.35:33509     192.168.6.5:1433        ESTABLISHED "
+enterprises.ossmon.exec.netstatTable.101.4 = "udp        0      0 192.168.28.35:32781     192.168.28.20:524       ESTABLISHED "
+</PRE>
+<P>
+As it tells from the names psTable will return output of ps -ef command, tailTable will return
+lines from requested file, syslogTable returns lines from logfiles, pingTable result of sending
+ICMP packets to remote site.<P>
+<B>ossmon.conf</B> just controls how ossmon.tcl script returns information. Default configuration
+is:<P>
+<UL>
+<LI><B>cache-time 60</B><BR>
+Cache timeout for duplicate requests, same requests coming
+in less than this value will be silently ignored<P>
+
+<LI><B>syslog-regexp ""</B><BR>
+Regexp for syslog matching, only matched lines will be reported. For each
+this regexp will be executed and if matched the line will be output. By default
+all syslog messages are returned, for busy sites this may not be appropriate<P>
+
+<LI><B>syslog-dir ""</B><BR>
+Directory with syslog files, all files in this directory will be processed
+except the files which end with number like file.1, file.2. Usually those files
+are rotated versions of real log files<P>
+
+<LI><B>syslog-file "/var/log/messages /var/log/secure /var/log/maillog"</B><BR>
+Syslog file(s) to process for error lines, list with full log file paths<P>
+
+<LI><B>syslog-max-lines 50</B><BR>
+Max number of syslog error lines to report at once, for busy syslog files
+OSSMON will receive syslog lines with significant delay which may not be
+appropriate for realtime alerts. In this case syslog-regexp parameter
+needs to be adjusted<P>
+
+<LI><B>syslog-silence-period { 18:00 57600 "Sat 0:0" 86400 "Sun 0:0" 86400 }</B><BR>
+Time period when NOT to report syslog error lines, format is
+timestamp1 duration1 timestamp2 duration2 ...
+   where timestamp is HH:MI or MM/DD/YYYY HH:MI or DOW HH:MI
+         duration is NN -seconds, NNm - minutes, NNh - hours
+This paremeter can be used to ignore activity for some periods
+of time when it is not important or no personnal on duty. It is just
+a list with timestamp and duration telling that starting with timestamp
+and for specified duration ignore any activity and do not report it<P>
+
+<LI><B>syslog-noactivity-time 7200</B><BR>
+Report error if nothing was added into syslog file for more than
+specified duration. Usefull for monitoring activity of some devices
+like serial port log/cdr readers when communication can hangup or freeze<P>
+
+<LI><B>fix-ssh killall -9 sshd<BR>
+fix-ssh exec /usr/local/sbin/sshd</B><BR>
+Fixing processes are done using Net-SNMP agent and ossmon.tcl script.
+For each proc configured in snmpd.conf there should be procfix entry:
+<PRE STYLE="background-color: #EEEEEE">
+  proc sshd 0 0
+  procfix sshd /usr/local/ns/bin/ossmon.tcl fix sshd
+</PRE>
+where sshd will be prepended with fix- prefix. All instructions
+with fix-sshd then will be executed when ossmon.tcl is called to fix
+sshd process<P>
+
+<LI><B>fix-nsd killall -9 nsd</B><BR>
+Restart Naviserver, assuming it runs from inittab<P>
+
+<LI><B>fix-postmaster killall -QUIT postmaster<BR>
+fix-postmaster sleep 3<BR>
+fix-postmaster exec /usr/local/pgsql/bin/pgsql.start</B><BR>
+Restart PostgreSQL server
+</UL>
+<P>
+
+<DT><A NAME=t53><H4>5.3. Naviserver configuration</H4></A>
+
+The following section in the Naviserver config file configures port for Web access:<P>
+
+<PRE STYLE="background-color: #EEEEEE">
+ns_section      "ns/server/${server}/module/nssock"
+ns_param        port                    4080
+ns_param        address                 0.0.0.0
+ns_param        hostname                localhost
+</PRE>
+<P>
+Setting port to any number below 1024, usually 80, will require to add -b 0.0.0.0:80 to
+the command line when executing Naviserver /usr/local/ns/bin/nsd.
+OSSWEB includes startup script /usr/local/ns/bin/nsd.start which will parse nsd.tcl and
+provide correct parameters.
+
+
+<DT><A NAME=t54><H4>5.4. Adding new MIB files</H4></A>
+
+All MIB variables and OIDs are handled by nssnmp module. It comes with number of
+common MIB modules like IF-MIB, SNMP2-MIB, CISCO-SMI. In case when new MIB module
+should be used for monitoring, the following procedure should be used:<P>
+
+<OL>
+<LI>Download new MIB files
+<LI>Compile nsmibdump utility provided with nssnmp module<P>
+    <PRE STYLE="background-color: #EEEEEE">
+    cd nssnmp
+    make nsmibdump
+    </PRE>
+<LI>Compile new MIB modules
+    <PRE STYLE="background-color: #EEEEEE">
+    nsmibdump VENDORMIB1.txt VENDORMIB2.txt > vendor-mibs.tcl
+    </PRE>
+<LI>Copy new vendor-mibs.tcl file into /usr/local/ns/modules/tcl
+<LI>Restart Naviserver
+</OL>
+<P>
+In some cases, like new CISCO MIB modules, parent module should be specified first.
+For example, to compile CISCO-PROCESS-MIB, CISCO-SMI module should be available before, it
+contains all parent cisco modules and OIDs. nsmibdump utility uses
+<A HREF=http://www.ibr.cs.tu-bs.de/projects/libsmi/>libsmi</A> for parsing MIB files.
+It is possible to add all new MIB files to libsmi MIB directories and nsmibdump will pick
+up new MIB by their module name. For example if copy CISCO-PROCESS-MIB.txt and CISCO-SMI.txt
+into /usr/share/mibs/site, then nsmibdump can be used as:<P>
+<PRE STYLE="background-color: #EEEEEE">
+ nsmibdump CISCO-SMI CISCO-PROCESS-MIB
+</PRE>
+<P>
+</DL>
+
+</OL>
+
+</BODY>

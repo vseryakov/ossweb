@@ -1,0 +1,193 @@
+
+             Lookup GUI components: Protocol and Usage
+
+  1. Requirements
+
+  To develop generic lookup interface or protocol in order to use lookup GUI components
+  in applications without writing custom code for every new application or table.
+  Should allow any custom GUI and SQL features but at the same time should be universal
+  and consistent across all applications.
+
+  2. Design
+
+  Lookup protocol has been developed to be used almost in any existing or
+  new application. It is designed so that it doesn't depend on any Tcl code or
+  SQL table. Minimum changes required to convert existing GUI pages into full-functional
+  lookup component.
+  All implementation of this protocol is implemented as Tcl command ossweb::lookup.
+  The page to be used as lookup component should call
+  ossweb::lookup handler in special places. It takes care about saving and
+  restoring page context, switching templates.
+
+  In order to call lookup page two required parameters should be set:
+
+  lookup:mode is 1 or 2, 2 means run in separate window without menu, i.e.
+         master index page with menu will not be used. In this mode, lookup
+         page should be called in separate window which can be achieved
+         by setting javascript handler in lookup widget.
+
+  lookup:return contains full template where to return when object is selected,
+         i.e. where to return selected object. In uses the same syntax as
+         util_use_template which means on return page will be switched,
+         not redirected.
+         Example:
+            lookup:return="-cmd_name edit -cmd_context address company_addresses"
+
+  lookup:map contains field names where to put result in popup window mode (2).
+         the format is just pairs of names where first name is result form field,
+         second name is database/table column name which values should be used.
+         Example:
+            lookup:map="group_id group_id group_name group_name descr description"
+
+  The places where lookup handler should be used are:
+
+    - set master to be used, in separate window mode .adp should use different index page
+
+    - command handler, first time component should be called with command lookup which will
+      save submitted form data, setup lookup environment and switch into search mode,
+      or to command which is specified by lookup:start parameter.
+      On return, lookup.return command will be used which comes to the same handler,
+      in this case lookup handler will restore context, retrieve record if necessary
+      and switch back to caller page. When return url has been clicked, selected
+      record may be retrieved by two ways:
+        - passed in url
+        - get from database if -sql parameter and -id column exist
+
+    - instead of util_url and util_link should be used
+      ossweb::lookup::url and ossweb::lookup::link
+
+    - row eval script should call ossweb::lookup::row for each row in the main multirow.
+      Format: ossweb::lookup::row name -id id
+      name tells which column to be used for selection url, it is required
+      -id is optional and may be used to specify unique ID column to be used in
+       SQL query on return. Without -id parameter, when user click on selection url, the
+       whole row record will be returned back. In some cases it might be very big. Instead,
+       on return only one Id columnd will be returned and then inside application lookup
+       handler will call specified SQL statemnet to retrieve the record and setup variables.
+
+    - form handler to add special form widgets:
+      Format: ossweb::lookup::form form_name -select t
+      -select t is optional, if definde special Select button will be added in the
+      form otherwise only required hidden fields will be added
+
+  3. Example
+
+     name.adp
+
+     The only special treatment here is setting variable master in <master> tag,
+     this variable will be set in tcl file to corresponding index page.
+
+     ---------------------------------------------------------------------------
+     <master src=@master@>
+     <if @cmd_name@ eq edit>
+       <formtemplate id=form_name title="Name Details"></formtemplate>
+       <return>
+     </if>
+     <help_title>Name List</help_title>
+     <border>
+     <rowfirst>
+      <TH WIDTH=1% NOWRAP>@name:add@</TH><TH>Name</TH>
+     </rowfirst>
+     <multiple name="names">
+     <row>
+       <TD WIDTH=1% >@names.edit@</TD><TD>@names.title@</TD>
+     </row>
+     </multiple>
+     </border>
+     ---------------------------------------------------------------------------
+
+     name.tcl
+     ---------------------------------------------------------------------------
+     Beginning from the top of .tcl file:
+       Line 5: ossweb::lookup::link is used
+       Line 10: multirow eval script calls lookup handler, row(title) will
+                contain lookup return url, it used name_id as ID columns for SQL
+       Line 11: edit url also uses ossweb::lookup::link
+       Line 21: form is extended with lookup elements
+       Line 30: master variable is set with appropriate master index page
+       Line 37: lookup command processor, on command lookup it saves form data
+                on command lookup.return it executes given sql statement, retrieves
+                name record and switches to the caller.
+     ---------------------------------------------------------------------------
+   1    proc name_list {} {
+   2
+   3      uplevel 1 {
+   4
+   5       set name:add [ossweb::lookup::link -image add.gif \
+   6                               -alt Add \
+   7                               cmd edit name_id -1]
+   8
+   9      template::query names multirow "SELECT name_id,title FROM names" -replace_null "&nbsp;" -eval {
+   10       ossweb::lookup::row title -id name_id
+   11       set row(edit) [ossweb::lookup::link -image edit.gif \
+   12                                -alt Edit \
+   13                                cmd edit name_id $row(name_id)]
+   14      }
+   15     }
+   16   }
+   17
+   18
+   19   proc create_form_name {} {
+   20     template::form create form_name
+   21     ossweb::lookup::form form_name -select t
+   22     template::element create form_name name_id -widget hidden
+   23     template::element create form_name title -widget text -label "Name"
+   24     template::element create form_name update -widget submit -name cmd -label Update
+   25     template::element create form_name delete -widget submit -name cmd -label Delete
+   26   }
+   27
+   28   util_process_request -columns { name_id int "" title "" "" }
+   29                   -forms form_name \
+   30                   -exec { set master [ossweb::lookup::master] } \
+   31                   -eval {
+   32                      edit {
+   33                          -validate { { name_id int } }
+   34                          -exec { name_edit }
+   35                      }
+   36                      lookup {
+   37                          -exec { ossweb::lookup::exec -sql "SELECT name_id,title
+   38                                                          FROM names
+   39                                                          WHERE name_id=$name_id" }
+   40                      }
+   42                      default {
+   43                          -exec { name_list }
+   44                      }
+   45                   }
+   46
+
+   caller.tcl
+
+     The caller uses lookup widget and javascript handler to call lookup name
+     component in separate window. The result will be returned back using command edit,
+     two variable name_id and title will be set from selected name object.
+     ----------------------------------------------------------------------------------
+      Mode 1:
+
+      template::element form_main group_id -widget hidden
+      template::element form_main group_name -widget lookup \
+         -url "window.location ='[util_url groups cmd lookup \
+                                           lookup:mode 1 \
+                                           lookup:start search \
+                                           lookup:return "-cmd_name edit mainpage"]'"
+      Mode 2:
+
+      template::element form_main group_id -widget hidden
+      template::element form_main name -widget lookup \
+         -url "window.open('[util_url groups cmd lookup \
+                                      lookup:mode 2 \
+                                      lookup:map "form_main.name group_name form_main.group_id group_id"]',
+                           'LookupWin',
+                           '[ossweb::lookup::property winopts]')"
+
+
+      Alternatively lookup widget supports special lookup options:
+
+        template::element form_main group_name -widget lookup \
+           -url [util_url groups cmd lookup]
+           -mode 1 \
+           -return "-cmd_name edit mainpage"]
+
+        template::element form_main name -widget lookup \
+           -mode 2 \
+           -url [util_url groups cmd lookup] \
+           -map {form_main.name group_name form_main.group_id group_id}

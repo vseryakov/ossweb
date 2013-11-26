@@ -1,0 +1,19 @@
+#!/usr/bin/tclsh
+
+# Input arguments
+set svn_path [lindex $argv 0]
+set svn_txn [lindex $argv 1]
+
+# Retrieve commit data
+catch { exec /usr/bin/svnlook info $svn_path -t $svn_txn } info
+
+set info [split $info "\n"]
+set user [lindex $info 0]
+set description [join [lrange $info 3 end]]
+
+if { [string length $description] < 10 } {
+  puts stderr "\n[string totitle $user], your comment is too short, please describe your changes"
+  exit 1
+}
+
+

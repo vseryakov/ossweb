@@ -1,0 +1,75 @@
+# XQL
+
+eventmap XQL : PLAIN {
+    key       [C+S+Q] { 
+                     InsertString "<query name=\"\">"; LineNew;
+                     InsertString "  <description>"; LineNew; MoveLineStart;
+                     InsertString "  </description>"; LineNew; MoveLineStart;
+                     InsertString "  <vars>"; LineNew; MoveLineStart;
+                     InsertString "  </vars>"; LineNew; MoveLineStart;
+                     InsertString "  <sql>"; LineNew; MoveLineStart;
+                     InsertString "  </sql>"; LineNew; MoveLineStart;
+                     InsertString "</query>"; LineNew;
+    }
+}
+
+colorize XQL {
+    SyntaxParser = 'SIMPLE';
+    
+    color {
+        { 'Normal',     'Editor_Default' },
+        { 'Command',    'Markup_Punctuation' },
+        { 'String',     'Markup_String' },
+        { 'Symbol',     'Markup_Symbol' },
+        { 'Tag',        'Markup_Tag' },
+        { 'Comment',    'Markup_Comment' },
+        { 'Special',    'Markup_Special' },
+    };
+
+    keyword "Editor_Keywords" {
+        "XQL","QUERY","DESCRIPTION","SQL","COLUMNS","VARS"
+    };
+
+    h_state 0 { 'Normal' }
+    h_trans { 5, '<', '<!--', 'Comment' }
+    h_trans { 1, '<', '<', 'Command' }
+    h_trans { 2, '<', '&', 'Symbol' }
+
+    h_state 1 { 'Command' }
+    h_trans { 0, '>', '>', 'Command' }
+    h_trans { 3, '<', '\'', 'String' }
+    h_trans { 4, '<', '"', 'String' }
+    h_wtype { -1, -1, -1, 'i', 'a-zA-Z0-9_\-' }
+
+    h_state 2 { 'Symbol' }
+    h_trans { 0, '>', ';', 'Symbol' }
+    h_trans { 0, '-S', '#a-zA-Z0-9', 'Symbol' }
+
+    h_state 3 { 'String' }
+    h_trans { 1, '>', '\'', 'String' }
+
+    h_state 4 { 'String' }
+    h_trans { 1, '>', '"', 'String' }
+
+    h_state 5 { 'Comment' }
+    h_trans { 6, '>', '--', 'Comment' }
+
+    h_state 6 { 'Special' }
+    h_trans { 5, '>', '--', 'Comment' }
+    h_trans { 0, '>', '>', 'Comment' }
+}
+
+mode XQL: PLAIN {
+    FileNameRx          = /\.\c{XQL}$/;
+    HilitOn             = 1;
+    Colorizer           = "XQL";
+    MultiLineHilit      = 1;
+    AutoHilitParen      = 1;
+
+    RoutineRegexp       = /\<query +name.+\>/;
+
+    SaveFolds           = 2;      # save fold info at end of line
+    CommentStart        = " <!--";
+    CommentEnd          = "-->";
+}
+

@@ -1,0 +1,338 @@
+
+body { 
+   font-family: arial,helvetica,verdana;
+   font-size: 10pt;
+   background-color: white;
+   margin: 0;
+}
+
+img {
+   border: 0px;
+}
+
+a.link:link, a.link:visited { 
+   text-decoration: none;
+}
+
+a:link, a:visited { 
+   text-decoration: none;
+}
+         
+td { 
+   font-size: 10pt; 
+}
+
+th { 
+   font-size: 10pt; 
+   text-align: left; 
+   font: Arial, Helvetica; 
+}
+
+.osswebSelect { 
+   font-size: 8pt; 
+   font: Arial, Helvetica; 
+   border-width: 1; 
+   background-color: #E3E5EF; 
+}
+
+.osswebInput { 
+   font-size: 8pt; 
+   font: Arial, Helvetica;
+   border-width: 1; 
+   border-color: #000000;
+   background-color: #E3E5EF; 
+}
+
+.osswebTextarea { 
+   font-size: 8pt; 
+   font: Arial, Helvetica;
+   border-width: 1; 
+   border-color: #000000;
+   background-color: #E3E5EF; 
+}
+
+.osswebRadio {
+   background-color: #E3E5EF;
+}
+
+.osswebCheckbox {
+   background-color: white;
+}
+
+.osswebButton { 
+   background-color: #90b0cc; 
+   border: 1px solid #000000; 
+   font-size: 9pt; 
+   font-weight: bold;
+   font: Arial, Helvetica;
+}
+
+.osswebButtonOver { 
+   background-color: #cbd2d8; 
+   border: 1px solid #000000; 
+   font-size: 9pt; 
+   font-weight: bold;
+   font: Arial, Helvetica;
+}
+
+.osswebSmallButton { 
+   background-color: #90b0cc; 
+   border: 1px solid #000000; 
+   font-size: 7pt; 
+   font-weight: bold;
+   font: Arial, Helvetica;
+}
+
+.osswebSmallButtonOver { 
+   background-color: #cbd2d8; 
+   border: 1px solid #000000; 
+   font-size: 7pt; 
+   font-weight: bold;
+   font: Arial, Helvetica;
+}
+
+.osswebFirstRow { 
+   background-image: url(/img/bg/rowfirst_osswebweb.gif);
+   background-color: #cbd2d8;
+}
+
+.osswebSectionRow {
+   background-image: url(/img/bg/rowsection_osswebweb.gif);
+   background-color: #cbd2d8;
+}
+
+.osswebLastRow {
+   background-color: white;
+}
+
+.osswebRow1 { 
+   background-color: #f2f5fa;
+}
+
+.osswebRow2 { 
+   background-color: #E3E5EF;
+}
+
+.osswebRow3 {
+   background-color: #8497a8;
+}
+
+.osswebSmallText { 
+   font-size: 8pt; 
+   font: Arial, Helvetica; 
+}
+
+.osswebBigText { 
+   font-size: 10pt; 
+   font: Arial, Helvetica; 
+}
+
+.osswebMenuBg {
+   border: 0px solid black;
+   background-color: black;
+}
+
+.osswebMenuTitle {
+   font: 9px Verdana,Arial,Helvetica;
+   font-weight: bold;
+}
+
+.osswebMenuItem  {
+   text-decoration: none;
+   color: black;
+   background-color: #7c95aa;
+   border: 1px solid black;
+   font: 10px Verdana,Arial,Helvetica;
+   font-weight: bold;
+   padding: 1px 20px 1px 6px;
+   cursor: hand;
+}
+
+.osswebMenuItemSelected  {
+   text-decoration: none;
+   color: black;
+   background-color: #436587;
+   border: 1px solid black;
+   font: 10px Verdana,Arial,Helvetica;
+   font-weight: bold;
+   padding: 1px 20px 1px 6px;
+   cursor: hand;
+}
+
+.osswebMenuBorder { 
+   border: 1px solid black;
+}
+
+.osswebMenuText {
+   position: absolute;
+   text-decoration: none;
+   padding: 3;
+   color: #c1c1c9;
+   font: 9px Verdana,Arial,Helvetica; 
+   font-weight: bold; 
+}
+
+.osswebTab {
+   background-color: #B2B2B2;
+}
+
+.osswebTabSelected {
+   background-color: #EEEEEE;
+}
+
+.osswebTabLink { 
+   text-decoration: none;
+   color: #293854;
+   background-color: white
+   font-weight: bold;
+}
+
+.osswebPopupObj { 
+   position: absolute; 
+   visibility: hidden; 
+   background-color: #FFFF99;
+   layer-background-color: yellow; 
+   width: 200; 
+   border-left: 1px solid black; 
+   border-top: 1px solid black; 
+   border-bottom: 2px solid black; 
+   border-right: 2px solid black; 
+   padding: 2px; 
+   z-index: 10;
+}
+
+.osswebPopupButtonDiv {
+   position: absolute;
+   visibility: hidden;
+   background-color: #8BA9DD;
+   layer-background-color: #8BA9DD;
+   width: 90;
+   border: 1px solid #000000; 
+   font-size: 9pt; 
+   font-weight: bold;
+   font: Arial, Helvetica;
+}
+
+.osswebPopupButtonTable {
+   width: 90;
+}
+
+.osswebPopupButtonLink {
+   color: black;
+   text-decoration: none;
+}
+
+.osswebForm {
+   background-color: white;
+}
+
+.osswebFormLabel { 
+   color: #436587;
+   font: Arial, Helvetica;
+   font-weight: bold;
+}
+
+.osswebFormTitle { 
+   font: Arial, Helvetica;
+   color: #234C54;
+   font-weight: bold;
+   text-decoration: underline;
+}
+
+.osswebFormInfo {
+   font: Arial, Helvetica;
+   color: gray;
+   font-weight: bold;
+}
+
+.osswebTitle { 
+   color: #293854;
+   font: Arial, Helvetica;
+   font-weight: bold;
+}
+
+.osswebError {
+   font: Arial, Helvetica;
+   color: red;
+   font-weight: bold;
+}
+
+.osswebCalendarTitle { 
+   color: #293854;
+   background-image: url(/img/bg/rowfirst_osswebweb.gif);
+   background-color: #0099CC;
+}
+
+.osswebCalendarToday { 
+   background-color: #FFFF99;
+}
+
+.osswebCalendarSelected { 
+   background-color: gray;
+}
+
+.osswebToolbar {
+   background-color: #436587;
+}
+
+.osswebLogoInfo {
+   color: #EAEEF9;
+}
+
+.osswebLogoTitle {
+   color: #EAEEF9;
+   font-weight: bold;
+   font-size: 12px;
+}
+
+.osswebBorder1 {
+   background-color: black;
+}
+
+.osswebBorder2 {
+   background-color: white;
+}
+
+.osswebBorderCurved {
+   background-color: white;
+}
+
+.osswebBorderCurved2 {
+   background-color: #f2f5fa;
+}
+
+.osswebBorderCurved3 {
+   color: #cbd2d8e;
+   font-weight: bold;
+   background-color: #7c95aa;
+}
+
+.osswebBorderGray {
+   background-color: white;
+}
+
+.osswebBorderWhite {
+   background-color: white;
+}
+
+.osswebInfo {
+   color: blue;
+}
+
+.osswebMsg {
+   color: gray;
+   font-weight: bold;
+}
+
+.osswebFooter {
+   color: #CCCCCC;
+}
+
+.osswebLabel {
+   font-weight: bold;
+}
+
+.osswebLink {
+   color: #3650e2;
+   text-decoration: none;
+}

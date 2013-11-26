@@ -1,0 +1,41 @@
+#!/bin/bash
+echo Content-type: text/html
+echo
+
+# To make firefox display in realtime we fill up the buffer
+
+echo "Tracing $QUERY_STRING"
+echo "                                                                             "
+echo "                                                                             "
+echo "                                                                             "
+echo "                                                                             "
+echo "                                                                             "
+echo "                                                                             "
+echo "                                                                             "
+echo "                                                                             "
+echo "                                                                             "
+echo "                                                                             "
+echo "                                                                             "
+echo "                                                                             "
+echo "                                                                             "
+echo "                                                                             "
+echo "                                                                             "
+echo "                                                                             "
+echo "                                                                             "
+echo "                                                                             "
+echo "                                                                             "
+echo "                                                                             "
+echo "                                                                             "
+echo "                                                                             "
+echo "                                                                             "
+echo "                                                                             "
+echo "                                                                             "
+
+echo "<PRE>"
+
+/usr/sbin/traceroute $QUERY_STRING 2>&1
+
+echo "<PRE>"
+
+exit 0
+

@@ -1,0 +1,133 @@
+
+.MMO {
+   background-color: white;
+   color: #293854;
+   font-size: 10pt;
+   font-weight: bold;
+   font-family: Verdana, Tahoma, Arial, Helvetica, sans-serif;
+   cursor: pointer;
+}
+
+.MM {
+   background-color: #CCDDEE;
+   color: #293854;
+   font-size: 10pt;
+   font-weight: bold;
+   font-family: Verdana, Tahoma, Arial, Helvetica, sans-serif;
+   cursor: pointer;
+}
+
+.TT {
+   color: black;
+   font-size: 7pt;
+   font-weight: normal;
+   font-family: Verdana, Tahoma, Arial, Helvetica, sans-serif;
+}
+
+.ST {
+   font-size: 7pt;
+   font-weight: bold;
+   font-family: Arial, Helvetica;
+}
+
+.LST {
+   font-size: 7pt;
+   font-weight: normal;
+   font-family: Arial, Helvetica;
+}
+
+.DST {
+   font-size: 7pt;
+   font-weight: bold;
+   font-family: Arial, Helvetica;
+   color: gray;
+}
+
+.TST {
+   font-size: 7pt;
+   font-family: Arial, Helvetica;
+}
+
+.MST {
+   font-size: 7pt;
+   font-family: Arial, Helvetica;
+}
+
+.CST {
+   font-size: 7pt;
+   font-family: Arial, Helvetica;
+   background-color: #CCCCCC;
+   border: 1px solid #000000;
+}
+.NST {
+   font-size: 7pt;
+   font-family: Arial, Helvetica;
+   background-color: #0cb534;
+   border: 1px solid #000000;
+   -moz-border-radius: 4px;
+}
+
+.EST {
+   font-size: 7pt;
+   font-family: Arial, Helvetica;
+   background-color: red;
+   border: 1px solid #000000;
+   -moz-border-radius: 4px;
+}
+
+.WST {
+   font-size: 7pt;
+   font-family: Arial, Helvetica;
+   background-color: orange;
+   border: 1px solid #000000;
+   -moz-border-radius: 4px;
+}
+
+.RST {
+   font-size: 7pt;
+   font-family: Arial, Helvetica;
+   background-color: #c4c378;
+   border: 1px solid #000000;
+   -moz-border-radius: 4px;
+}
+
+.AST {
+   font-size: 7pt;
+   font-family: Arial, Helvetica;
+   background-color: #65cae7;
+   border: 1px solid #000000;
+}
+
+.UST {
+   font-size: 7pt;
+   font-family: Arial, Helvetica;
+   color: darkgreen;
+}
+
+.AWST {
+   font-size: 7pt;
+   font-family: Arial, Helvetica;
+   font-weight: bold;
+   color: orange;
+}
+
+.ARST {
+   font-size: 7pt;
+   font-family: Arial, Helvetica;
+   font-weight: bold;
+   color: #c4c378;
+}
+
+.AAST {
+   font-size: 7pt;
+   font-family: Arial, Helvetica;
+   font-weight: bold;
+   color: #65cae7;
+}
+
+.AEST {
+   font-size: 7pt;
+   font-family: Arial, Helvetica;
+   font-weight: bold;
+   color: red;
+}

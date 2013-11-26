@@ -1,0 +1,16 @@
+ICAO Location
+Indicator 4 alphanumeric characters.
+Block Number 2 digits representing the WMO-assigned block. Not all stations in the file have an assigned block number. The value "--" is used for station without an assigned number.
+Station Number 3 digits representing the WMO-assigned station. Not all stations in the file have an assigned station number. The value "---" is used for station without an assigned number.
+Place Name Common name of station location.
+State 2 character abbreviation (included for stations located in the United States only).
+Country Name Country name is ISO short English form.
+WMO Region digits 1 through 6 representing the corresponding WMO region, 7 stands for the WMO Antarctic region.
+Station Latitude DD-MM-SSH where DD is degrees, MM is minutes, SS is seconds and H is N for northern hemisphere or S for southern hemisphere. The seconds value is omitted for those stations where the seconds value is unknown.
+Station Longitude DDD-MM-SSH where DDD is degrees, MM is minutes, SS is seconds and H is E for eastern hemisphere or W for western hemisphere. The seconds value is omitted for those stations where the seconds value is unknown.
+Upper Air Latitude DD-MM-SSH where DD is degrees, MM is minutes, SS is seconds and H is N for northern hemisphere or S for southern hemisphere. The seconds value is omitted for those stations where the seconds value is unknown.
+Upper Air Longitude DDD-MM-SSH where DDD is degrees, MM is minutes, SS is seconds and H is E for eastern hemisphere or W for western hemisphere. The seconds value is omitted for those stations where the seconds value is unknown.
+Station Elevation (Ha) The station elevation in meters. Value is omitted if unknown.
+Upper Air Elevation (Hp) The upper air elevation in meters. Value is omitted if unknown.
+RBSN indicator P if station is defined by the WMO as belonging to the Regional Basic Synoptic Network, omitted otherwise.
+

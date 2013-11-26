@@ -1,0 +1,40 @@
+TV Show Alert: @search_text@ @search_actor@
+
+The following @alerts:rowcount@ TV shows have been matched against your alerts filters:
+<P>
+
+<HR>
+
+<multirow name=alerts>
+<%=[ossweb::html::title @alerts.program_title@]%> <if @program_year@ ne "">(@program_year@)</if>
+<BR>
+<B>
+@alerts.program_subtitle@
+<if @part_number@ ne "">Part @alerts.part_number@</if>
+<if @episode_number@ ne "">Episode @alerts.episode_number@</if>
+@alerts.mpaarating@ @alerts.tvrating@ @alerts.starrating@ @alerts.stereo@ @alerts.closecaptioned@
+<BR>
+@alerts.channel_id@/@alerts.station_name@ @alerts.affiliate@, @alerts.start_time@, @alerts.duration@
+<BR>
+<%=[join @alerts.genre@ ", "]%>
+</B>
+<P>
+@alerts.description@
+<P>
+<%
+  array unset roles
+  foreach { role givenname surname } @alerts.crew@ {
+    lappend roles($role) "$givenname $surname"
+  }
+  foreach role [array names roles] {
+    ossweb::adp::Write "<B>$role</B>: [join $roles($role) ", "]<BR>"
+  }
+%>
+<P>
+<HR>
+</multirow>
+
+<I>
+To change or delete TV Show alerts please login into Customr Care website
+at <%=[ossweb::config customer:support:website]%>
+</I>

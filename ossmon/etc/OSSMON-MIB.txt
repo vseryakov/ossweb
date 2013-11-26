@@ -1,0 +1,112 @@
+OSSMON-MIB DEFINITIONS ::= BEGIN
+
+--
+--  OSSMON Interface MIB.
+--
+--  2004 Copyright Vlad Seryakov vlad@crystalballinc.com
+--
+--  Enterprise 19804 is assigned to The Norns Laboratories
+--
+--
+
+IMPORTS
+        enterprises, OBJECT-TYPE
+	    FROM SNMPv2-SMI
+	DisplayString,INTEGER
+	    FROM SNMPv2-TC;
+
+-- private	  OBJECT IDENTIFIER ::= { internet 4 }
+-- enterprises    OBJECT IDENTIFIER ::= { private 1 }
+ossmon            OBJECT IDENTIFIER ::= { enterprises 19804 }
+exec		  OBJECT IDENTIFIER ::= { ossmon 1 }
+kill		  OBJECT IDENTIFIER ::= { ossmon 2 }
+event		  OBJECT IDENTIFIER ::= { ossmon 3 }
+local             OBJECT IDENTIFIER ::= { ossmon 9 }
+
+emptyTable OBJECT IDENTIFIER ::= { exec 1 }
+-- OBJECT-IDENTITY
+--  Status
+--    mandatory
+--  Descr
+--    A table with empty lines, for BULK requests
+
+psTable OBJECT IDENTIFIER ::= { exec 2 }
+-- OBJECT-IDENTITY
+--  Status
+--    mandatory
+--  Descr
+--    A table of UNIX processes (ps -ef)
+
+netstatTable OBJECT IDENTIFIER ::= { exec 3 }
+-- OBJECT-IDENTITY
+--  Status
+--    mandatory
+--  Descr
+--    A table of UNIX network statistics (netstat)
+
+tailTable OBJECT IDENTIFIER ::= { exec 4 }
+-- OBJECT-IDENTITY
+--  Status
+--    mandatory
+--  Descr
+--    A table of tail-like output of file
+
+syslogTable OBJECT IDENTIFIER ::= { exec 5 }
+-- OBJECT-IDENTITY
+--  Status
+--    mandatory
+--  Descr
+--    List of syslog entries
+
+pingTable OBJECT IDENTIFIER ::= { exec 6 }
+-- OBJECT-IDENTITY
+--  Status
+--    mandatory
+--  Descr
+--    A table of ping results
+
+
+tailFile OBJECT-TYPE
+         SYNTAX          DisplayString
+         MAX-ACCESS      read-write
+         STATUS          current
+         DESCRIPTION     "File name to be shown like tail -f command. Format: -lines filename"
+         ::= { event 1 }
+
+killProcess OBJECT-TYPE
+         SYNTAX          DisplayString
+         MAX-ACCESS      read-write
+         STATUS          current
+         DESCRIPTION     "Process will be killed using given pid and signal number.Format: -signal PID"
+         ::= { event 2 }
+
+fixProcess OBJECT-TYPE
+         SYNTAX          DisplayString
+         MAX-ACCESS      read-write
+         STATUS          current
+         DESCRIPTION     "Process matched by ossmon.conf will be fixed"
+         ::= { event 3 }
+
+pingHost OBJECT-TYPE
+         SYNTAX          DisplayString
+         MAX-ACCESS      read-write
+         STATUS          current
+         DESCRIPTION     "Host name to be ping-ed"
+         ::= { event 4 }
+
+ossmonAlert OBJECT-TYPE
+         SYNTAX          DisplayString
+         MAX-ACCESS      read-only
+         STATUS          current
+         DESCRIPTION     "Trap message"
+         ::= { event 5 }
+
+ossmonTrap OBJECT-TYPE
+         SYNTAX          DisplayString
+         MAX-ACCESS      read-only
+         STATUS          current
+         DESCRIPTION     "Trap message"
+         ::= { event 6 }
+
+END
+

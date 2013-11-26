@@ -1,0 +1,37 @@
+# $Id: PKGBUILD 2680 2007-01-08 15:25:50Z vlad $
+# Maintainer: Judd <jvinet@zeroflux.org>
+pkgname=postgresql
+pkgver=8.3.7
+pkgrel=9
+pkgdesc="A sophisticated object-relational DBMS"
+arch=(i686 x86_64)
+url="http://www.postgresql.org/"
+depends=('glibc' 'openssl' 'zlib' 'readline')
+source=(ftp://ftp.postgresql.org/pub/source/v$pkgver/postgresql-$pkgver.tar.gz postgresql)
+
+build() {
+  cd $startdir/src/$pkgname-$pkgver
+  ./configure --prefix=/usr --with-tcl --with-libxml \
+              --datadir=/usr/share/postgresql \
+              --enable-thread-safety --mandir=/usr/share/man --with-openssl
+  sed -i -e '/interfaces/d' src/Makefile || return 1
+  make || return 1
+  make DESTDIR=$startdir/pkg install
+
+  # Remove client libraries
+  rm -rf ${startdir}/pkg/usr/include/postgresql/internal
+  rm -rf ${startdir}/pkg/usr/include/libpq
+  rm -f ${startdir}/pkg/usr/include/*
+  rm -f ${startdir}/pkg/usr/bin/pg_config
+  rm -f ${startdir}/pkg/usr/lib/libpgport.a
+
+  install -D -m755 ../postgresql $startdir/pkg/etc/rc.d/postgresql
+
+  # Build contrib modules
+  cd contrib
+  make DESTDIR=$startdir/pkg install
+
+  # remove .la files
+  find $startdir/pkg -name "*.la" -exec rm {} \;
+
+}

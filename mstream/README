@@ -1,0 +1,19 @@
+After install, type in the Firefox location
+
+about:config
+
+Press right mouse button, select New->String
+
+Enter name: network.mstream.path
+
+Enter value: path to the media streamer
+
+VLC or mplayer or other, for example c:\program files\videolan\vlc\vlc.exe
+
+After that all links started with mstream:// will be passed directly to vlc 
+or mplayer for streaming play.
+
+Examples:
+
+mstream://localhost/movies/TheMask.avi
+

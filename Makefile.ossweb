@@ -1,0 +1,203 @@
+-include ../Makefile.local
+-include Makefile.local
+
+dbuser		?= 	postgres
+dbname		?=	ossweb
+project		?=	ossweb
+appname		?= 	$(shell basename `pwd`)
+
+prefix		?=	/usr/local/ns
+modules_dir	=	${prefix}/modules
+includes_dir	=	${prefix}/include
+tcl_dir		=	${prefix}/tcl
+styles_dir	=	${prefix}/styles
+xql_dir		=	${prefix}/xql
+bin_dir		=	${prefix}/bin
+conf_dir	=	${prefix}/conf
+logs_dir	=	${prefix}/logs
+pages_dir	=	${prefix}/pages
+ossweb_dir	=	${tcl_dir}/ossweb
+css_dir		=	${pages_dir}/css
+doc_dir		=	${pages_dir}/doc
+js_dir		=	${pages_dir}/js
+images_dir	=	${pages_dir}/img
+sounds_dir	=	${pages_dir}/snd
+project_dir	=	${pages_dir}/${project}
+app_dir		=	${project_dir}/${appname}
+index_dir	=	${project_dir}/index
+
+scp		    = 	$(shell which scp)
+pwd		    = 	$(shell pwd)
+psql		=	$(shell which psql)
+pg_config	=	$(shell which pg_config)
+createuser	=	$(shell which createuser)
+createlang	=	$(shell which createlang)
+locale		=	$(shell locale|grep LC_COLLATE|awk -F'=' '{print $2}'|sed 's/"//g')
+
+install_dir	=	mkdir -p -m 0755
+install_db	=	${psql} -U ${dbuser} -f
+install_link=	ln -sf
+remove_file	=	rm -rf
+
+install_file=       for f in $(1); do cp -rf $$f $(2); done
+install_path=       mkdir -p -m 0755 $(2) && cp -rf $(1) $(2)
+
+page_files	=	$(shell find . -maxdepth 1 -name '*.tcl' -print -o -name '*.adp' -print -o -name *.html -print|grep -v '_procs.tcl')
+procs_files	=	$(shell find . -maxdepth 1 -name '*_procs.tcl' -print)
+tcl_files	=	$(shell find . -maxdepth 1 -name '*.tcl' -print)
+adp_files	=	$(shell find . -maxdepth 1 -name '*.adp' -print -o -name *.html -print)
+xql_files	=	$(shell find . -maxdepth 1 -name '*.xql' -print)
+js_files	=	$(shell find . -maxdepth 1 -name '*.js' -print)
+css_files	=	$(shell find . -maxdepth 1 -name '*.css' -print)
+
+find_files	=	$(shell find . -maxdepth 1 -name '$(1)' -type f -print)
+find_all	=	$(shell find . -maxdepth 1 -name '$(1)' -print)
+find_pages	=	$(shell find . -maxdepth 1 -name '*.tcl' -type f -print -o -name '*.adp' -type f -print|grep -v '_procs.tcl')
+
+copy_pages	=       $(shell f="$(call find_pages)" && if [ "${host}" != "" -a "$$f" != "" ]; then ${scp} -Q $$f $(host):$(app_dir); fi)
+copy_files	=       $(shell f="$(call find_files,$(1))" && if [ "${host}" != "" -a "$$f" != "" ]; then ${scp} -Q $$f $(host):$(2); fi)
+copy_all	=       $(shell if [ "${host}" != "" -a "$(1)" != "" ]; then ${scp} -rQ $(1) $(host):$(2); fi)
+
+is_mod		=	$(shell cat Makefile | grep install_module)
+
+all: build
+
+install_module:	 install_all
+
+install_all:	build install_links install_js install_css
+	-${install_dir} ${ossweb_dir} ${xql_dir} ${app_dir}
+	-$(call install_file,${procs_files},${ossweb_dir})
+	-$(call install_file,${page_files},${app_dir})
+	-$(call install_file,${xql_files},${xql_dir})
+
+install_index:	 build install_links
+	-${install_dir} ${project_dir}/index
+	-${install_link} ${project_dir}/index/index.adp ${project_dir}/index.adp
+	-$(call install_file,${page_files},${project_dir}/index)
+
+install_ossweb:	 build install_links
+	-${install_dir} ${ossweb_dir} ${xql_dir}
+	-$(call install_file,${tcl_files},${ossweb_dir})
+	-$(call install_file,${xql_files},${xql_dir})
+	-$(call install_file,../Makefile.ossweb,${includes_dir})
+
+install_js:	 build install_links
+	-${install_dir} ${js_dir}
+	-$(call install_file,${js_files},${js_dir})
+
+install_ljs:	 build install_links
+	-${install_dir} ${project_dir}/${appname}
+	-$(call install_file,${js_files},${app_dir})
+
+install_tcl:	 build install_links
+	-${install_dir} ${tcl_dir}
+	-$(call install_file,${tcl_files},${tcl_dir})
+
+install_css:	 build install_links
+	-${install_dir} ${css_dir}
+	-$(call install_file,${css_files},${css_dir})
+
+install_styles:	 build install_links
+	-${install_dir} ${styles_dir}
+	-$(call install_file,${adp_files},${styles_dir})
+
+install_rights:
+	-chown -fR nobody ${modules_dir}/files ${logs_dir}
+
+install_links: links
+
+refresh_db:
+	-find . -name *_procs.sql -exec ${install_db} "{}" ${dbname} ";"
+	-find . -name *_triggers.sql -exec ${install_db} "{}" ${dbname} ";"
+
+create_db:
+	-if [ "${dbuser}" != "postgres" ]; then ${createuser} -A -d -r -U postgres ${dbuser}; fi
+	-${psql} -U ${dbuser} -c "CREATE DATABASE ${dbname}" template1
+	-${psql} -U ${dbuser} -c "CREATE LANGUAGE 'plpgsql';CREATE LANGUAGE 'pltcl'" ${dbname}
+	-if [ "${pg_config}" != "" ]; then \
+	   ${psql} -q -U ${dbuser} -f `${pg_config} --sharedir`/contrib/tsearch2.sql ${dbname}; \
+	   if [ "${locale}" != "" ]; then \
+	     ${psql} -q -U ${dbuser} -c "UPDATE pg_ts_cfg SET locale='${locale}' WHERE ts_name='default'" ${dbname}; \
+	   fi; \
+	fi
+
+install_sql:
+	-if [ -e ${appname}.sql ]; then ${install_db} ${appname}.sql ${dbname}; fi
+	-if [ -e ${appname}_procs.sql ]; then ${install_db} ${appname}_procs.sql ${dbname}; fi
+	-if [ -e ${appname}_triggers.sql ]; then ${install_db} ${appname}_triggers.sql ${dbname}; fi
+	-if [ -e ${appname}_views.sql ]; then ${install_db} ${appname}_views.sql ${dbname}; fi
+	-if [ -e ${appname}_data.sql ]; then ${install_db} ${appname}_data.sql ${dbname}; fi
+	-if [ -e ${appname}_help.sql ]; then ${install_db} ${appname}_help.sql ${dbname}; fi
+	-if [ -e ${appname}_sample.sql ]; then ${install_db} ${appname}_sample.sql ${dbname}; fi
+
+install_devel: links
+	-if [ "${appname}" = "ossweb" ]; then \
+	   ${remove_file} ${project_dir} ${ossweb_dir} ${js_dir} ${css_dir} ${styles_dir} ${images_dir} ${xql_dir}; \
+	   ${install_link} ${pwd} ${project_dir}; \
+	   ${install_link} ${pwd}/tcl ${ossweb_dir}; \
+	   ${install_link} ${pwd}/styles ${styles_dir}; \
+	   ${install_link} ${pwd}/images ${images_dir}; \
+	   ${install_link} ${pwd}/xql ${xql_dir}; \
+	   ${install_link} ${pwd}/js ${js_dir}; \
+	   ${install_link} ${pwd}/css ${css_dir}; \
+	   find . -maxdepth 2 \
+		-path './css/*' -type l -exec rm {} ";" -o \
+		-path './js/*' -type l -exec rm {} ";" -o \
+		-path './xql/*' -type l -exec rm {} ";" -o \
+		-path './images/*' -type l -exec rm {} ";" -o \
+		-path './tcl/*' -type l -exec rm {} ";"; \
+	   find ossweb -maxdepth 2 -name *.tcl -exec ${install_link} ${pwd}/{} ${pwd}/tcl ";"; \
+	   for d in ${modules}; do \
+	      if [ $$d != css ]; then find $$d -name *.css -exec ${install_link} ${pwd}/{} ${pwd}/css ";"; fi; \
+	      if [ $$d != js ]; then find $$d -name *.js -exec ${install_link} ${pwd}/{} ${pwd}/js ";"; fi; \
+	      find $$d -name *.xql -exec ${install_link} ${pwd}/{} ${pwd}/xql ";"; \
+	      find $$d -name *_procs.tcl -exec ${install_link} ${pwd}/{} ${pwd}/tcl ";"; \
+	   done; \
+	else \
+     	   ${install_link} ${pwd}/../ossweb/admin; \
+           if [ "${project}" != "ossweb" ]; then \
+	     ${install_link} ${pwd}/../ossweb/css/ossweb.css ${pwd}/../ossweb/css/${project}.css; \
+	   fi; \
+	   for d in ${modules}; do \
+	      ${install_link} ${pwd}/$$d ${pwd}/../ossweb; \
+	      find $$d -name *.css -exec ${install_link} ${pwd}/{} ${pwd}/../ossweb/css ";"; \
+	      find $$d -name *.js -exec ${install_link} ${pwd}/{} ${pwd}/../ossweb/js ";"; \
+	      find $$d -name *.xql -exec ${install_link} ${pwd}/{} ${pwd}/../ossweb/xql ";"; \
+	      find $$d -name *_procs.tcl -exec ${install_link} ${pwd}/{} ${pwd}/../ossweb/tcl ";"; \
+	   done; \
+	   for d in admin main pub styles index; do \
+	      if [ -d ${pwd}/$$d ]; then \
+	        find $$d -name *.adp -exec ${install_link} ${pwd}/{} ${pwd}/../ossweb/$$d ";"; \
+	        find $$d -name *.tcl -exec ${install_link} ${pwd}/{} ${pwd}/../ossweb/$$d ";"; \
+	      fi \
+	   done; \
+	   find ./images -maxdepth 1 \
+		-name *.gif -exec ${install_link} ${pwd}/{} ${pwd}/../ossweb/images ";" -o \
+		-name *.jpg -exec ${install_link} ${pwd}/{} ${pwd}/../ossweb/images ";" -o \
+		-name *.png -exec ${install_link} ${pwd}/{} ${pwd}/../ossweb/images ";"; \
+	   for d in `find ./images -maxdepth 1 -type d -printf "%f\n"`; do \
+		if [ "$$d" != "images" -a "$$d" != ".svn" ]; then \
+		  ${install_link} ${pwd}/images/$$d ${pwd}/../ossweb/images; \
+		fi; \
+	   done; \
+	fi
+
+install_copy:	copy
+	-$(call copy_pages)
+	-$(call copy_files,*_procs.tcl,${ossweb_dir})
+	-$(call copy_files,*.xql,${xql_dir})
+	-$(call copy_files,*.js,${js_dir})
+	-$(call copy_files,*.css,${css_dir})
+
+clean:	cleanup
+	-rm -rf *~ core*
+
+clean_links: clean
+	find . -type l -exec rm -rf "{}" ";"
+
+clean_svn:
+	find ./ -name .svn -exec rm -rf "{}" ";"
+
+
+.PHONY:	build links cleanup copy
+

@@ -1,0 +1,46 @@
+# Javascript mode
+
+colorize JS {
+    SyntaxParser = 'C';
+    
+    color {
+        { 'Normal',        'Lang_Default' },
+        { 'Number',        'Lang_DecimalNumber' },
+        { 'HexNumber',     'Lang_HexNumber' },
+        { 'Punctuation',   'Lang_Punctuation' },
+        { 'String',        'Lang_String' },
+        { 'Comment',       'Lang_Comment' },
+        { 'CPreprocessor', 'Lang_Preprocessor' },
+        { 'Function',      'Lang_Function' },
+        { 'Label',         'Lang_Label' },
+    };
+    
+    keyword 'Editor_Keywords' { # any missing ?
+        'do', 'if', 'int','for', 'new', 'try', 
+        'case', 'char', 'else', 'goto',
+        'long', 'this', 'void', 'function',
+        'break', 'catch', 'class', 'const', 'float',
+        'short', 'union', 'while',
+        'double', 'return', 'signed',  'sizeof',  'static',
+        'struct',  'switch',
+        'default', 'continue', 'throw', 'using',
+        'bool', 'true', 'false',
+    };
+}
+
+mode JS: PLAIN {      # Javascript mode via C/C++
+    FileNameRx          = /\.\c{{JS}$/;
+    HilitOn             = 1;
+    Colorizer           = 'JS';
+    SpaceTabs           = 1;
+    MatchCase           = 1;
+    Trim                = 1;
+    MultiLineHilit      = 1;
+    AutoHilitParen      = 1;
+    RoutineRegexp       = /^{\w[\w_:*&~]+[\w\s_:*&~]@\([^;]*}|{.*function.*\(.*\)}$/;
+    SaveFolds           = 2;      # save fold info at end of line
+    CommentStart        = ' /*';
+    CommentEnd          = '*/';
+}
+
+

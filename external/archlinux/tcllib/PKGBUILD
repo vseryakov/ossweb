@@ -1,0 +1,14 @@
+pkgname=tcllib
+pkgver=1.9
+pkgrel=1
+arch=(i686 x86_64)
+pkgdesc="Standard Tcl library"
+url="http://tcl.tk/software/tcllib/"
+source=(http://kent.dl.sourceforge.net/sourceforge/$pkgname/$pkgname-$pkgver.tar.gz)
+
+build() {
+  cd $startdir/src/$pkgname-$pkgver
+  ./configure --prefix=/usr
+  /usr/bin/make DESTDIR=$startdir/pkg install
+}
+

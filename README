@@ -1,0 +1,250 @@
+OSSWEB: Web Development Framework for NaviServer 4.x
+Release 2.0
+
+OSSWEB is a Web Application Framework which makes life much easier
+in creating and deploying Web applications. The system consists from
+several parts:
+
+  - security layer
+  - templating manager
+  - database layer
+  - connection manager
+
+Security paradigm is described in the User Guide,
+briefly it is general purpose mechanism for access restrictions
+in Web applications.
+
+Templating manager provides additional tags that can be used
+in the html pages and ability to create custom tags to make Web pages
+simpler and more readable.
+
+Database layer is a high level functions which covers most typical
+database access methods and performs all type/variable conversions between
+database and Tcl. Many functions are similar in functionality with
+OpenACS database functions.
+
+Connection manager performs all work with query parsing,
+Tcl variables initializing and request routing. The system implements
+request state machine whereby each request launches corresponding
+Tcl callback.
+
+OSSWEB is being developed using PostgreSQL 8.x and has no other database
+support at this time. 
+
+
+-----------------------------------------------------------------------------------------
+To install Tcl if it is not installed:
+
+  make install_tcl
+
+
+
+-----------------------------------------------------------------------------------------
+To install PostgreSQL if it is not installed:
+
+You need to be root to create user postgres and run server as 
+user postgres. If you want to run server as user postgres run
+these commands first, otherwise skip this section:
+
+  su
+  useradd postgres
+  su - postgres
+
+Then compile and install the database server:
+
+  make install_pgsql
+
+
+If PostgreSQL is already installed, make sure it is compiled with Tcl 
+language support for stored procedures. To check run this command:
+
+  ls -l `pg_config --pkglibdir`/pl*
+
+  It should produce output like this:
+
+  -rwxr-xr-x 1 root root 148641 Jun  4 10:19 /usr/lib/postgresql/plpgsql.so
+  -rwxr-xr-x 1 root root  34277 Jun  4 10:19 /usr/lib/postgresql/pltcl.so
+
+If you do not see pltcl.so, then your PostgreSQL server compiled without Tcl, 
+OSSWEB requires it, so it needs to be recompiled with --with-tcl option for 
+configure. In this case using make install_pgsql could be easier way but this will
+install second copy of the server in the /usr/local/ns and will require changing
+startup script to start correct PostgreSQL version on boot.
+
+
+
+Before you proceed with OSSWEB instalation, make sure PostgreSQL server is up and running
+
+-----------------------------------------------------------------------------------------
+To install Naviserver and only core OSSWEB modules:
+
+  make install_core_world
+
+
+
+-----------------------------------------------------------------------------------------
+To install Naviserver and OSSWEB and all modules:
+
+  make install_world
+
+
+By default all make commands above will install binaries into 
+/usr/local/ns.
+
+To install them into different directory specify prefix=otherdir
+for every or any make commands, like:
+
+  make install_tcl prefix=/usr/local
+  make install_pgsql prefix=/usr/local/pgsql
+  make install_workd prefix=/opt/ns
+
+
+In case when for example Tcl is installed in some unusual directory, you can pass
+configure parameters:
+
+  make install_world configure="--with-tcl=/usr/local/tcl"
+
+-----------------------------------------------------------------------------------------
+Manually Install OSSWEB
+
+OSSWEB installation include several steps: database creation,
+data model installation, web application installation. Once you have
+database up and running, OSSWEB installation simply requires the
+following command.
+
+  make create_db
+  make install_db
+  make install
+
+ - create_db creates database 'ossweb', default database owner is postgres
+
+   NOTE: OSSWEB requires tsearch2 module from PostgreSQL contrib, it will try
+   to autodetect and install it if contrib modules have been compiled and installed
+   with PostgresQL. If PostgreSQL is installed in non-starndard directory, add path
+   to binaries to PATH environment, so make will be able to find psql and pg_config
+   utilities:
+
+     export PATH=$PATH:/usr/local/pgsql/bin
+     make create_db
+
+ - install_db creates all tables and functions for each application.
+
+   NOTE: If you want to install any particular module separately, then you need
+   to use make install_sql command.
+
+   For example:
+
+     cd ossmon && make install_sql install
+
+   will install ossmon db schema and all files
+
+ - install creates directory structure and copies all tcl and adp files
+
+   By default all modules will be installed, each make command can accept
+   modules=modlist parameters which tells which modules to install.
+
+   For example to install core and task tool use:
+
+   make install_core
+
+   which is equivalent to
+
+   make install_db install modules="ossweb conf bin js css images index pub main admin styles doc"
+
+
+NOTE: If the PostgreSQL installation owner is not user postgres, then add
+dbuser=username to all make commands:
+
+   make create_db dbuser=username
+   make install_db dbuser=username
+
+
+
+-----------------------------------------------------------------------------------------
+OSSWEB NaviServer directory structure is:
+
+  bin           - naviserver binaries and modules
+  conf          - nsd.tcl configuration
+  logs          - log files
+  tcl           - standard tcl procs
+     ossweb     - core procs and modules
+  styles        - templates, GUI abstraction layer
+  xql           - xql files, SQL abstraction layer
+  pages
+     ossweb     - project with applications in each directory
+        admin   - administrative web pages
+        main    - main application pages
+        pub     - public pages, login page
+        index   - common master index templates
+        ...
+     css        - CSS stylesheets
+     js         - common javascript functions
+     img        - icons and images
+
+
+
+-----------------------------------------------------------------------------------------
+Configuration
+
+nsd.tcl installed in /usr/local/ns/conf has several
+options which may be customized. By default server will listen on
+port 8080. To start server enter
+
+  /usr/local/ns/bin/nsd
+
+  By default it will try to use /usr/local/ns/conf/nsd.tcl but if it is not
+  exists then you need to start server with full path to the config file:
+
+  /usr/local/ns/bin/nsd -t /usr/local/ns/conf/nsd-config.tcl
+
+and then point your browser to
+
+  http://localhost:8080/ossweb/
+
+Default OSSWEB administrative user is admin with password admin
+
+Database configuration includes the following parameters that may be
+modified:
+
+ns_section      "ns/server/${server}/ossweb"
+ns_param        server:database         ossweb
+
+  tells which database pool to be used for OSSWEB. Database pool 'ossweb'
+  is configured as local database 'ossweb' with PostgreSQL running on the same
+  machine.
+
+
+
+-----------------------------------------------------------------------------------------
+Archlinux specific notes
+
+PostresSQL for Archlinux is compiled without Tcl, so it needs to be recompiled.
+go to archlinux/postgresql subdirectyory and type:
+
+makepkg
+
+Then install the package as:
+
+pacman -U postgresql-8.2.5-5.pkg.tar.gz
+
+
+
+-----------------------------------------------------------------------------------------
+Development environment
+
+To create development environment whereby all sources stay in the local
+repository and are used by Naviserver without making install every time
+the source file is changed, issue the following commands:
+
+make install_devel
+cp conf/nsd.tcl /usr/local/ns/conf
+sudo /bin/bash -c "cat conf/inittab >> /etc/inittab"
+
+Latest development snapshot can be always retrieved from SVN:
+
+svn co svn://www.crystalballinc.com/ossweb
+
+Authors
+
+  Vlad Seryakov vlad@crystalballinc.com
+

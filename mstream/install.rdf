@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:em="http://www.mozilla.org/2004/em-rdf#">
+
+  <Description about="urn:mozilla:install-manifest">
+    <em:id>{770d4d1a-a959-4353-95af-0e7a483bb4a0}</em:id>
+    <em:version>1.0</em:version>
+    <em:type>2</em:type>
+
+    <em:name>Mozilla Stream Protocol Handler</em:name>
+    <em:description>Allows Firefox to call external program to handler mstream: urls</em:description>
+    <em:creator>Vlad Seryakov</em:creator>
+    <em:homepageURL>http://www.crystalballinc.com/vlad</em:homepageURL>
+
+    <em:targetApplication>
+      <Description>
+        <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
+        <em:minVersion>1.5</em:minVersion>
+        <em:maxVersion>5.0+</em:maxVersion>
+      </Description>
+    </em:targetApplication>
+
+    <em:file>
+      <Description about="urn:mozilla:extension:file:mstream.jar">
+        <em:package>content/mstream/</em:package>
+      </Description>
+    </em:file>
+ </Description>
+</RDF>

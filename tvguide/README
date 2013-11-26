@@ -1,0 +1,36 @@
+Required software:
+
+  wget: http://www.gnu.org/software/wget/wget.html
+  expat: http://expat.sourceforge.net
+  nsexpat: http://www.aolserver.com
+
+  PVR (optional):
+  - mplayer
+
+Go to http://labs.zap2it.com and click on the "New User? Sign Up" link. 
+Read the license terms, and if you agree with them click "Accept". 
+The next screen is the subscription registration. 
+In the "Certificate Code" field, enter ZIYN-DQZO-SBUT.
+
+Zap2it driver SOAP Request:
+
+http://datadirect.webservices.zap2it.com
+
+POST /tvlistings/xtvdService HTTP/1.1
+SOAPAction: urn:TMSWebServices:xtvdWebService#download
+Accept-Encoding: deflate, gzip
+
+<?xml version='1.0' encoding='utf-8'?>
+<SOAP-ENV:Envelope 
+      xmlns:SOAP-ENV='http://schemas.xmlsoap.org/soap/envelope/' 
+      xmlns:xsd='http://www.w3.org/2001/XMLSchema' 
+      xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' 
+      xmlns:SOAP-ENC='http://schemas.xmlsoap.org/soap/encoding/'> 
+  <SOAP-ENV:Body> 
+    <tms:download xmlns:tms='urn:TMSWebServices'>
+      <startTime xsi:type='tms:dateTime'>2003-03-26T12:00:00Z</startTime>
+      <endTime xsi:type='tms:dateTime'>2003-03-27T04:00:00Z</endTime>
+    </tms:download> 
+  </SOAP-ENV:Body> 
+</SOAP-ENV:Envelope>
+

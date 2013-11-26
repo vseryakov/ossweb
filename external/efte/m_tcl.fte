@@ -1,0 +1,80 @@
+colorize TCL {
+    SyntaxParser = 'SIMPLE';
+    
+    color {
+        { 'Normal',      'Lang_Default' },
+        { 'Comment',     'Lang_Comment' },
+        { 'String',      'Lang_String' },
+        { 'Punctuation', 'Lang_Punctuation' },
+        { 'Variable',    'Lang_Variable' },
+        { 'Directive',   'Lang_Preprocessor' },
+        { 'Special',     'Lang_Control' },
+    };
+
+    keyword 'Editor_Keywords' {
+'continue','history','pid','switch','if','else','elseif',
+'incr','eof','info','proc','after',
+'error','interp','puts','append','eval','join','pwd','array','exec','lappend',
+'re_syntax','auto_execok','exit','lindex','read','expr','linsert','regexp',
+'tell','fblocked','list','time','fconfigure','llength','regsub','trace',
+'fcopy','load','rename','unknown','file','lrange','resource','unset',
+'fileevent','lreplace','return','update','bgerror','filename','lsearch',
+'scan','uplevel','binary','flush','lsort','seek','upvar','break','for',
+'memory','set','variable','catch','foreach','msgcat','socket','vwait',
+'cd','format','namespace','source','while','clock','gets','open','split',
+'close','glob','package','string','concat','global','parray','subst',
+'template_tag','oss::tag::create'
+    };
+
+    h_state 0 { 'Normal' }
+    h_trans { 1, '-s', 'a-zA-Z0-9_', 'Normal' }
+    h_trans { 5, '<', '$', 'Variable' }
+    h_trans { 2, '-', '#', 'Comment' }
+    h_trans { 3, '<', '"', 'String' }
+    h_trans { 4, '<', '`', 'String' }
+    h_trans { 0, 'S', 'a-zA-Z0-9_', 'Punctuation' }
+
+    h_state 1 { 'Normal' }
+    h_trans { 0, '$', '', 'Normal' }
+    h_wtype { 0, 0, 0, '', 'a-zA-Z0-9_' }
+
+    h_state 2 { 'Comment' }
+    h_trans { 0, '$', '', 'Normal' }
+    h_trans { 0, '', '#$', 'Normal' }
+    h_trans { 0, '', '#[', 'Normal' }
+
+    h_state 3 { 'String' }
+    h_trans { 0, '>', '"', 'String' }
+    h_trans { 3, 'qQ', '\\', 'String' }
+
+    h_state 4 { 'String' }
+    h_trans { 0, '>', '`', 'String' }
+    h_trans { 4, 'qQ', '\\', 'String' }
+
+    h_state 5 { 'Variable' }
+    h_trans { 0, '$', '', 'Normal' }
+    h_trans { 0, '-S',  'a-zA-Z0-9_', 'Normal' }
+
+    h_state 6 { 'Directive' }
+    h_trans { 0, '$', '', 'Normal' }
+    h_trans { 0, '-S',  'a-zA-Z0-9_', 'Normal' }
+
+    h_state 7 { 'Special' }
+    h_trans { 0, '$', '', 'Normal' }
+    h_trans { 0, '-S',  'a-zA-Z0-9_', 'Normal' }
+}
+
+mode TCL: PLAIN {
+    FileNameRx          = /\.\ctcl$/;
+    FirstLineRx         = /^\#\![^ ]*{wish>}/;
+    HilitOn             = 1;
+    Colorizer           = 'TCL';
+    MultiLineHilit      = 1;
+    AutoHilitParen      = 1;
+    RoutineRegexp       = /^{proc}|{ossweb::tag::create}|{template_tag}|{ossweb::conn::callback}|{template::callback}|{ossweb::conn::process}|{nstk::tag::create}\ [^ ]+[ ]+\{.*\}[ ]+\{[ ]*$/;
+    SaveFolds           = 2;      # save fold info at end of line
+    CommentStart        = ' #';
+    CommentEnd          = '';
+    WordChars           = 'A-Za-z0-9_[]{}()"$:';
+}
+

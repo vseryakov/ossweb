@@ -1,0 +1,281 @@
+Eric Dean 
+eric@crystalballinc.com
+http://www.maverixsystems.com
+
+Maverix Email Verification
+                                                                                                
+While basic spam prevention mechanisms are now being built into more recent mail 
+servers, the underlying problem is that email, or the Simple Mail Transfer Protocol 
+(SMTP), was never designed to be secure.  Just as anyone can go to a post office and 
+send a letter to anyone with any return address in the left-had corner, SMTP followed the 
+postal service model within RFC 821 and subsequent revisions that allows for anyone to 
+send an email without validating themselves or the message.  An effort to produce an 
+anti-spam email protocol has recently begun within the Anti-Spam Research Group 
+(ASRG); however, the methods for developing an anti-spam protocol are far from being 
+organized and much further away from being implemented.  Moreover, there is a large 
+set of installed email servers on the Internet and it will be many years before an anti-
+spam protocol proliferates. 
+ 
+Some of the principles swirling within ASRG are the notion that email must first be 
+validated from an authentic source and then verified as wanted from that source.  In fact, 
+many methods today exist for validating email, however, most email servers are not 
+correctly configured for validation: they are minimally configured to deliver and receive 
+email.  The basic requirements for setting up an email server include registering a 
+domain name, assigning an IP address, and pointing a DNS mail exchange (MX) record 
+to the mail server.  Beyond these three steps, many system administrators do not 
+venture.   
+ 
+Standardís Compliance: RFC 821 Checking 
+Often, a mail server is configured with a server name that is not DNS registered on the 
+Internet.  For example, someone may configure the hostname as ìmailhostî, unknowing 
+that the mail server will initiate SMTP connections and announce itself as mailhost within 
+its HELO message.  The destination server will therefore be unable to validate that the 
+server mailhost is actually a real mail server or a spammer sitting at home running a 
+Windows-based, shareware spam program.  Unless the system administrator assigns 
+the mail server a valid DNS name, such as mailhost.company.com and then registers 
+the hostname within DNS, then the destination mail server will not be able to validate 
+that the hostname within the HELO message even exists.  Just verifying that the 
+hostname exists is still far from establishing that the server announced within the HELO 
+message is in fact an email authority for mailhost.company.com. 
+ 
+Then there are further configuration issues such as ensuring that the DNS forward and 
+reverse information for mailhost.company.com match the serverís source IP and 
+hostname included in the HELO message.  A strict RFC821 interpretation would ensure 
+that the HELO hostname, forward DNS resolution for mailhost.company.com and the 
+reverse DNS resolution for source IP address are all consistent, however, 
+consequentially this would result in a considerable amount of dropped email.  Within 
+Sendmail, Postfix, Qmail and other popular email servers exist various configuration 
+parameters that can be tuned to only accept email if one or more of these parameters 
+are consistent.  However, from a practical standpoint, there are so many email servers 
+on the Internet that are misconfigured, and surprisingly from leading companies, that 
+tight email policies result in a non-trivial percentage of valid email being dropped along 
+with spamÖyet many spammers still deliver email. 
+
+Additional complexities arise when more complex system architectures are implemented 
+including firewalls, NAT, NAT-proxy, and dedicated servers for outgoing SMTP and 
+incoming MX email.  Many different possible network configurations exist on the Internet 
+such that any moderately sized company will expect to receive email from thousands of 
+sources and will most likely loosely configure their email policies to minimize the 
+occurrence of false positives: desired email that is inadvertently dropped.  Spammers 
+appreciate loose email policies but imposing strict email policies immediately disturbs 
+the flow of business.  This paradox raises the concern surrounding deployment viability 
+of an Internet standard when system administrators are unable to properly configure 
+their email servers today with just basic information. 
+ 
+Blacklisting  
+Some companies attempt to filter sources of spam using subscription based real-time 
+blacklists. While these blacklists attempt to identify potential sources of spam including 
+dial-up, DSL, and cable IP pools many legitimate small businesses are now using 
+business-grade DSL or cable for Internet access with their email server located on a 
+DMZ static IP.  Spammers also prefer DSL and cable access because of the high 
+bandwidth capacity available for generating a large amount of spam and the low cost of 
+service.  Other blacklists include identifying open relays, or email servers that can be 
+used by spammers to re-originate email.  While open relays are a real source spam 
+email, the blacklists are sometimes perceived as overly aggressive and often blacklist an 
+unsuspecting novice system administrator.  While those instances can be corrected, 
+there are a variety of popular DSL and cable modem models that ship as an open-proxy 
+and are thereby exploited as a source to re-originate spam.  In fact, AOL just recently 
+announced it is blacklisting email from all known DSL providers. 
+ 
+In effect, trying to test email sources in an automated way results in unintentionally 
+dropping a considerable amount of desired email.  Spammers certainly pay close 
+attention to popular email software and commonly install multitudes of email relay 
+servers throughout the world, often overseas, and ensure that all DNS and HELO 
+methods are consistent to bypass even strict RFC policies.  In fact, spam originates 
+using every conceivable method known.  Often spam is tailored for the mail server, 
+detecting whether itís an MS Exchange, Sendmail, Lotus Notes or other mail server and 
+uses specific exploits to ensure the mail is delivered. 
+ 
+Pattern Recognition 
+As an additional attempt to block spam, companies often purchase subscription-based 
+software that uses virus scanning methods to identify spam textual patterns.  
+Unfortunately, spam does not necessarily have specific programming signatures as does 
+an executable virus.  Spam instead uses unconventional guerilla warfare tactics that 
+vary daily.  Attempting to recognize patterns in spam is about an effective approach as 
+John Forbes Nash Jr. took in searching for espionage messages encoded within 
+newspapers.  Spam constantly mutates and sifts through spam filters while valid email 
+increasingly becomes subjected to drops.  Itís simply intuitive that as the number of 
+possible spam phrases continue to grow, then email passing through the system will 
+also slow down while the number of spam attacks trying to find a magic phrase will 
+increase.  As long as there is hope of getting a message through an email system, 
+spammers will continue to deliver spam.   
+ 
+Terms such as heuristic analysis, bayesian filters, and many other top-shelf, algorithmic 
+terms divert from the fact that itís a brute force method with questionable effectiveness 
+and always has false positives.  Some anti-spam methods merely prepend the subject 
+line of a suspected spam with a ìJunkî or ìSpamî tag, result in users still receiving the 
+tagged spam and often the user is still briefly subjected to the spam even when deleting 
+it, especially when using a preview pane window or webmail.  These vendors 
+recommend enforcing policies within the clientís email.  Within a thousand+ user 
+organization, implementing and supporting such a mechanism is impractical. 
+ 
+Administration concerns 
+There is a recent emergence of integrated spam and viruses that exploit the 
+vulnerabilities within email clients as well as those within webmail systems.  Webmail 
+systems are often vulnerable to a variety of javascript and other embedded browser 
+functions.  Commonly a user is subjected to a variety of pop-ups or other types of 
+advertisements while simply reading email.  Some email clients can also be exploited by 
+HTML messages that attempt to activate certain programs on the userís computer, 
+download software, or perform other viral-type functions.  The next generation of viral 
+marketing will certainly leverage email messaging and will most likely use spam viruses. 
+ 
+As long as spam is read, spammers will get paid and continue to send spam.  If a 
+method prevents spam from being viewed, then there is no possible way for spammers 
+to generate revenue and therefore theyíll stop spamming.  Merely cutting spam in half 
+means theyíll double the spam.  At the heart of most anti-spam systems lies the inherent 
+problem that too few choices exist for system administrators.  Faced with the option to 
+either deliver or drop questionable email, the system administrator will err on the side of 
+caution and chose to deliver most email to minimize the occurrence of false positives.  
+While personal email policies may be enforced within specific email clients, such 
+methods are unmanageable within a medium-sized enterprise.   
+ 
+What is required is a centralized anti-spam system with distributed control that 
+delivers 100% of desired email while filtering 100% of undesired email. 
+ 
+The Verification Solution 
+Email verification dynamically builds individual whitelists of valid senders while also 
+building blacklists of blocked senders.  A greylist maintains all unverified senders along 
+with their email in a message store and awaits verification either via the sender of the 
+recipient user.  All new senders not on a userís whitelist or blacklist automatically 
+become greylisted, in a pending state, until they are either later verified or blocked.  
+Once verified, the sender remains verified and subsequent email to that user is 
+immediately delivered without further interrogation.   
+ 
+Sender self-verification speeds up the process whereby a sender will receive in reply to 
+a message a one-time challenge handshake message with a URL to click on and get 
+automatically added to the userís whitelist.  A spammer could potentially produce a robot 
+that will automatically click on any links returned within an email.  However, to do so, the 
+spammer must use non-spoofed email accounts, receive all challenge handshake 
+messages, and engage in a three-way process that corroborates illegal actions.  While 
+itís difficult to stop someone willing to commit a crime, additional techniques can be used 
+to thwart robots, however, requiring spammers to give up their anonymity is an 
+enormous disadvantage.  The sender IP address, domain name, and HTTP IP address 
+are all logged and reported.  An additional benefit of the challenge handshake is to 
+automatically deny all senders whose challenge message bounces due to unknown user 
+or other SMTP errors.  Delivering an email to a user that is incapable of a reply is not of 
+much value to a user.  
+ 
+Of course, sender self-verification is only one option at the disposal of the user.  
+Typically, within a month, a userís whitelist will quickly stabilize and only 1-2% additional 
+users will get periodically added, however, new spammers are persistent.  Often, sender 
+self-verification is a good feature to enable for the first few months but sometimes is 
+disabled and users manage all new senders directly.  The Maverix system periodically 
+sends the user a tabular digest of all new senders and allows the user to simply click 
+links to verify or block the sender, or merely forward or drop that specific message.      
+ 
+Spammers commonly send email with unique sender addresses.  Doing so prevents 
+simple blacklists from effectively stopping a persistent spam source but also provides the 
+spammer with a means of tracking the success of individual marketing campaigns or 
+whether a dictionary attack user in fact exists or not.  Because a spammer rarely uses 
+the same sender email address, often itís equally as effective to simply drop the spam 
+rather than block the sender.  While some users initially express that the verification drop 
+process seem to be an ìextra stepî in their day-to-day email habits; after using the 
+Maverix system for a period, they realize that they have to delete the spam anyway, 
+whether from their email client or from the Maverix server. 
+ 
+Dropping the spam at the server provides a unique benefit: the spammers canít get paid.  
+Spammers are marketing products and only get paid if users buy them.  If the user never 
+receives the message, then they certainly wonít buy the product.  If spam is dropped at 
+the server, no spammer will ever exploit a companyís employee base as a source of 
+consumers.   
+ 
+Some users express that they would prefer to never receive the spam in the first place.  
+In fact, Maverix drops about 60% of the spam based upon the bounce of the sender 
+verification messages.  There is no way to ensure 100% delivery of desired mail, when 
+the determination of ìdesireî rests within the individual.  Therefore some level of user 
+interaction is required.  Maverixís user verification process becomes a simple and 
+intuitive tool that users immediately gain expertise.   
+ 
+Since the spam is never delivered to the desktop, email clients often perform better 
+because their ìDeletedî folder is not cluttered up with spam that consumes memory and 
+storage.  After the first month, once the userís whitelist is established, then the 
+verification process often becomes transparent to the userÖexcept for that fact that no 
+more spam arrives.   
+ 
+Maverix also operates in a ìgatewayî mode that delivers all outgoing email as well as 
+handling the MX for incoming email.  A company will often install Maverix as itís outgoing 
+gateway for a burn-in period of 2 weeks.  During this period, Maverix will automatically 
+build a whitelist from all outgoing email sent from the companyís users to potential future 
+senders.  Therefore, when verification is enabled in week 3, each user already has an 
+established whitelist of senders.    
+ 
+
+Deployment Considerations 
+Maverix runs on a hardened Linux-based operating system.  Only the kernel and a few 
+utilities are installed and most everything else is disabled.  Typical available utilities and 
+applications include: 
+
+  SMTP Maverix runs as email server and must receive mail on TCP port 25  
+  HTTP Maverix verification URLs use TCP port 80 
+  HTTPS Administration is securely performed via SSL TCP port 443  
+  SSH Remote access to Maverix is strongly recommended only available via 
+  SSH TCP port 22 
+  SNMP Automated monitoring and management via SNMPv2 or SNMPv3 allows for 
+       central NOC to maintain high availability via UDP port 161 and 162 
+ 
+No other ports are available for external use.  Maverix will run an internal named DNS 
+server, however, that is filtered from outside use.  In addition, Maverix can issue external 
+authentication queries such as LDAP, Radius, or SecureID for administrative purposes.  
+With security at the center, Maverix has been designed to run directly on the Internet 
+though installing Maverix within a firewalled environment is fully understandable. 
+ 
+Maverix operates on the most scalable web server: AOLServer along with PostgreSQL 
+database.  Sendmail, Qmail, and Postfix are all supported Message Transfer Agents that 
+are often used to handle outgoing mail gateway functions, generic UCE, and bounce 
+management. 
+ 
+Typically, Maverix installs on a system with dual-CPU, 1 GB of memory, and over 
+100GB of RAID storage.  While Dell is the preferred equipment vendor, Maverix will run 
+on any Linux capable system.  All hardware and software components can be remotely 
+monitored via a central NOC.  
+ 
+Maverix Benefits 
+Maverix was designed as a highly available and fully manageable anti-spam and anti-
+virus email appliance.  Key components unique to Maverix include: 
+
+     1.  Maverix system architecture sits on top of a fully transactional database.  While 
+        most mail system use directory or file based mail queues, Maverix stores each 
+        message into a database.  This means that queue management is extremely 
+        simple and messages never get lost.  Because Maverix is stateful with all 
+        transactions, it does not get caught in verification loops with other verification 
+        servers. 
+
+     2.  Maverix stores all configuration related information in the database.  Because a 
+        database can be dynamically queried, there is no need to perform a lengthy kill
+        HUP to clear all memory and reset a process after each modification.  Software 
+        modifications are non-interruptive to system operations. 
+
+     3.  Maverix does not require user imports, directory interfaces, or passwords.  
+        Instead, Maverix uses highly cryptic, unguessable URLs for all user 
+        management.  All administration is sent via email messages.  If a user is capable 
+        of retrieving their email via POP or IMAP, then they can manage their own anti-
+        spam settings. 
+
+     4.  Maverix can run within high-availability, redundant architectures with diverse 
+        Internet connections.  Because Maverix uses a database, it can also perform 
+        database replication.  All configuration settings and message information can be 
+        replicated via a LAN or across a wide area network.    
+
+     5.  Maverix is feature rich for personalization.  Individual users prefer to tune their 
+        own settings.  Some want to set digest hours for 6:00AM to 10:00pm, some want 
+        to receive a digest every hour while other prefer 4 hours, some travel on 
+        extended vacations, some do not want to perform sender self-verification.  All 
+        personal features are customizable by users themselves. 
+
+     6.  Maverix natively supports email lists.  Both internal lists such as 
+        sales@company.com as well as externally subscribed lists are supported by 
+        Maverix.  Rather than broadcast a digest message to an entire department, 
+        Maverix allows for internal list verification to be sent to only one or more users 
+        who control the internal list or alias.  Because email lists such as sales@, 
+        support@, and others are published on web pages, they are always targeted by 
+        spammers who run simple web spiders to pickup email links.  Maverix also 
+        performs external list detection for users that are subscribed to various Internet 
+        mailing lists.  While it would be an annoyance to post verification messages to an 
+        Internet mailing list, Maverix detects incoming email from mailing lists and 
+        suppresses self-verification messages. 
+
+     7.  Maverix provides a low-overhead, intuitive administration interface.  Because 
+        Maverix self-administers itself by auto-discovering all users and distributing 
+        personal control down to end-users, System Administrators rarely touch the 
+        system, yet, the administration interface is robust and easy to use.    
+

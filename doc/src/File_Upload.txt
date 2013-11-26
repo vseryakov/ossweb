@@ -1,0 +1,134 @@
+
+             File Upload support
+
+There are tools for supporting file upload and maintaining properties
+which may contain files. Basically, these tools are low-level componets
+upon which it is possible to build complete solution of any complexity.
+
+These tools are divided on 3 parts:
+
+  1. Web form
+  2. Storage
+  3. Retrieval
+
+  1. Web form support
+  
+In order to perform file uploading, form must be created with
+special encoding type, for example:
+
+  template::form create form_property -html { ENCTYPE multipart/form-data }
+  
+Somewhere in the form there should be file upload elements:
+
+  template::element create form_property name -widget text
+  template::element create form_property value -widget file
+  
+  2. Storage
+  
+Once web form is filled up with data and is submitted, file contents
+are transmitted to .tcl script. Appropriate handler is called and
+file contents and file name should be saved in your application.
+You are repsonsible for providing storage and naming these file
+and properties. Also it is your responsibility to mark somehow
+these file properties, so next time you read properties you will
+be able to differentiate files from regular text properties.
+
+In order to save file property util_file_upload should be called.
+When returned, if file was really uploaded, this proc will
+return new unique file name, if there is no file the proc will return
+the same value. So it is safe to call this proc for every submitted
+property value. It will save uploaded files with unique name or
+will do nothing in case of simple values.
+
+  set type ""
+  set value [util_file_upload value \
+                              $value \
+                              -nonempty t \
+                              -save old \
+                              -path customer/$customer_id]
+  if { $value != $old } { 
+    set type file
+  }
+  db_exec $db "INSERT INTO properties(name,type,value)
+               VALUES([ossweb::sql::quote $name],
+                      [ossweb::sql::quote $type],
+                      [ossweb::sql::quote $value])"
+
+
+  In the example above the form with property name and value was submitted
+  and handler called util_file_upload in order to find out if we have file uploaded
+  or not. If there is a file, we mark property type as file, so we can differentiate
+  files from text values. 
+
+  Usage:
+  util_file_upload name value args
+  
+  name is name of file upload form element
+  value is actual value of file upload element
+  -save parameter specifies variable name wher to put old value
+       in case of file upload. This is useful when util_file_upload is 
+       used to update the same variables, but we need to compare old and 
+       new file names after calling it.
+  -path specifies directory where to store files, this path may 
+        include subdirectories.
+  -nonempty if t, will save only nonempty files, so it is possible to use
+            fiel upload form element for text values too.
+  
+  3. Retrieval
+
+Once file property is saved, it should be displayed properly. We should have some
+mark for file properties, it may be additional column with property type, it may be
+special property naming convention and etc. Assuming that we know which property is
+what the retrieval of this properties becomes an easy part.
+  
+util_file_name should be used in order to strip special information and show only 
+file name. For every file property url for file retrieval should be assigned.
+It is possible to create global file handler, but sometimes each application
+allows access to its own properties only, so the application should implement
+file display handler inside itself. util_file_return is used for returning file
+contents back to the browser, it requires only full file name and path. We
+used path customer/$customer_id in order to save files per customer, so we have to
+use this path in all file related procedures.
+
+   proc properties_list {} {
+   
+     template::query data multirow "SELECT name,type,value FROM properties" -eval {
+       switch $row(type) {
+        file {
+          set row(value) [util_link -text [util_file_name $row(value)] \
+                                    -html TARGET=file \
+                                    cmd file \
+                                    file $row(value) \
+                                    customer_id $customer_id]
+        }
+       }
+     }
+   }
+      
+   util_process_request \
+      -columns { customer_id int "" file var "" } \
+      -eval {
+      
+        ...
+      
+        file {
+          -exec { util_file_return $file customer/$customer_id }
+        }
+        
+        default {
+          -exec { }
+        }
+      }
+
+  Last thing, in .adp file there should be empty entry for file
+command, because util_file_return replies with HTTP headers and file
+contents, any template output will be ignored but may corrupt HTTP
+reply. Put similar piece of code at the beginning of .adp file, just
+before master tag.
+
+
+<if @cmd_name@ eq file>
+   <return>
+</if>
+<master src=index>
+

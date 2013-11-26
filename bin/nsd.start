@@ -1,0 +1,14 @@
+#!/bin/bash
+
+USER=nobody
+GROUP=root
+BIN=/usr/local/ns/bin/nsd
+
+CFG=/usr/local/ns/conf/nsd.tcl
+LOG=/usr/local/ns/logs/nsd.log
+
+touch $LOG
+chown $USER $LOG
+
+ulimit -c unlimited
+exec $BIN -t $CFG -u $USER -g $GROUP -i >> $LOG 2>&1

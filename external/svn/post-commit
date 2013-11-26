@@ -1,0 +1,35 @@
+#!/usr/bin/tclsh
+
+package require http
+
+# Input arguments
+set svn_path [lindex $argv 0]
+set svn_rev [lindex $argv 1]
+
+# Retrieve commit data
+catch { exec /usr/bin/svnlook info $svn_path -r $svn_rev } info
+catch { exec /usr/bin/svnlook changed $svn_path -r $svn_rev } files
+
+set info [split $info "\n"]
+set user [lindex $info 0]
+set description [join [lrange $info 3 end]]
+set file ""
+
+# Add updated files, tasks description is always HTML
+foreach { op of } $files {
+  lappend file $of
+}
+
+# Autocomplete if word fixed is in the comment
+set status ""
+if { [regexp -nocase { fixed} $description] } {
+  set status completed
+}
+
+# Check for problem id in the comment
+if { [regexp {\#([0-9]+)} $description d problem_id] } {
+  set url http://localhost/PROBLEM/note?[http::formatQuery id $problem_id user $user description $description status $status rev $svn_rev file $file]
+  catch { http::geturl $url }
+}
+
+

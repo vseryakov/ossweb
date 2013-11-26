@@ -1,0 +1,71 @@
+OSSMON: Network and Applications Monitoring System
+Version 2.0
+vlad@crystalballinc.com
+
+/*--------------------------------------------------------------------*/
+
+OSSMON is easy to use web-based monitoring package based on OSSWEB
+application framework. It supports SNMP monitoring as well as
+specific services like POP3, SMTP, Ping.
+
+Features
+
+  - main goal is to have the system that monitors network devices
+    and produces alerts when problem occurs or device is unaccessable
+  - alert rules can be defined based on variables from the database or
+    received from remote devices
+  - reporting, performance charts
+  - supports small and middle size networks
+  - turnkey installation, no external dependencies, everything runs
+    on Naviserver, Net-SNMP agents are reqired for OSSMON-MIB
+    support but optional
+  - easy and intuitive web interface, usefull immediately after installation
+  - extensible architecture, adding new devices and monitoring is easy,
+    just implement one procedure for any specific protocol and OSSMON
+    will take care of the rest
+
+Design/architecture
+
+  - based on Naviserver and OSSWEB framework
+  - PostgreSQL as database backend
+  - Net-SNMP agent is Tcl script which extends snmpd to support
+    OSSMON-MIB variables and tables such as syslogTable, psTable,
+    netstatTable, pingTable
+
+Requirements
+
+OSSMON depends on OSSWEB application framework which in turn based on
+Naviserver.
+
+The following Naviserver modules are required:
+  - nssnmp
+  - nsicmp
+  - nsdns
+  - nsgdchart
+  - nsimap
+  - nssys
+
+Naviserver can be downloaded from http://sourceforge.net/projects/naviserver/
+OSSWEB and modules from http://www.crystalballinc.com/vlad/software
+
+Installation
+
+OSSMON installation include several steps: data model installation,
+web application installation. OSSWEB is required to be installed prior
+OSSMON installation.
+
+Installation instructions are in the OSSMON manual in the doc/
+subdirectory.
+
+Configuration
+
+  All config options can be configured from OSSWEB Config page.
+
+Authors
+
+     Vlad Seryakov vlad@crystalballinc.com
+
+Project Web site
+
+     http://www.crystalballinc.com/vlad/software
+

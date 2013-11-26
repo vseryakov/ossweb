@@ -1,0 +1,43 @@
+# Doctools mode
+
+colorize MAN {
+    SyntaxParser = 'SIMPLE';
+    
+    color {
+        { 'Normal',        'Editor_Default' },
+        { 'Command',       'Lang_Function' },
+    };
+    
+    keyword 'Editor_Keywords' {
+        'subsection', 'section','list_begin','list_end',
+        'bullet', 'enum','example_begin', 'example_end',
+        'titledesc', 'moddesc', 'para',
+        'nl', 'call', 'uri', 'emph','arg',
+        'opt', 'see_also', 'keywords', 'comment',
+        'cmd', 'description', 'strong', 'fun',
+        'var', 'file', 'lst_item'
+    };
+
+    h_state 0 {'Normal'}
+    h_trans { 1, '[', '[', 'Command'}
+
+    h_state 1 {'Command'}
+    h_trans { 0, ']', ']', 'Normal'}
+    h_trans { 0, '-S',  'a-zA-Z0-9_', 'Normal' }
+
+}
+
+mode MAN: PLAIN {      # Doctools Mode
+    FileNameRx          = /\.\c{MAN}}$/;
+    HilitOn             = 1;
+    AutoIndent          = 0;
+    Colorizer           = 'MAN';
+    IndentMode          = 'PLAIN';
+    MultiLineHilit      = 1;
+    AutoHilitParen      = 1;
+    RoutineRegexp       = /^ *\[{section}|{subsection}|{call}/;
+    SaveFolds           = 2;
+    CommentStart        = '<!--';
+    CommentEnd          = '-->';
+}
+
